@@ -65,3 +65,5 @@ Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 *.pak
+Test/Uncooked/Scripts/paklist.txt
+Test/Cooked/Scripts/paklist.txt
