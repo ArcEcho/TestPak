@@ -81,9 +81,9 @@ void AMyPawn::LoadPakWithUnCookedAsset()
     PakPlatformFile->Initialize(&PlatformFile, TEXT(""));
     FPlatformFileManager::Get().SetPlatformFile(*PakPlatformFile);
 
-    FString PakFilename("C:/Users/Administrator/Desktop/PakTest/Paks/Test_UnCooked.pak");
-    FString mountPoint(*(FPaths::GameContentDir() + TEXT("TestPaks/UnCooked/")));
-    
+    FString PakFilename = FPaths::GameDir() + TEXT("Test/Uncooked/Paks/Test.pak");
+    FString mountPoint(*(FPaths::GameContentDir() + TEXT("TestPaks/Uncooked/")));
+
     if (!PakPlatformFile->Mount(*PakFilename, 0, *mountPoint))
     {
         UE_LOG(LogTemp, Log, TEXT("Pak Mount Failed"));
@@ -134,7 +134,7 @@ void AMyPawn::LoadPakWtihCookedAsset()
     PakPlatformFile->Initialize(&PlatformFile, TEXT(""));
     FPlatformFileManager::Get().SetPlatformFile(*PakPlatformFile);
 
-    FString PakFilename("C:/Users/Administrator/Desktop/PakTest/Paks/Test_cooked.pak");
+    FString PakFilename = FPaths::GameDir() + TEXT("Test/Cooked/Paks/Test.pak");
     FString mountPoint(*(FPaths::GameContentDir() + TEXT("TestPaks/Cooked/")));
 
     if (!PakPlatformFile->Mount(*PakFilename, 0, *mountPoint))
@@ -184,37 +184,39 @@ void AMyPawn::TryLoadUnCookedAsset()
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("TryLoadUnCookedAsset"));
     UE_LOG(LogTemp, Log, TEXT("TryLoadUnCookedAsset"));
     FStreamableManager  StreamableManager;
-    FStringAssetReference AssetReference("/Game/TestPaks/UnCooked/TestMat.TestMat");
-    UObject *LoadedObject = StreamableManager.LoadSynchronous(AssetReference);
-    if (LoadedObject)
+    //FStringAssetReference AssetReference("/Game/TestPaks/Uncooked/TestMat.TestMat");
+    FStringAssetReference AssetReference("/Game/TestPaks/TestMat.TestMat");
+    UMaterialInterface *LoadedMaterial = StreamableManager.LoadSynchronous<UMaterialInterface>(AssetReference);
+    if (LoadedMaterial)
     {
         UE_LOG(LogTemp, Log, TEXT("Load Succeeded"));
+        Mesh->SetMaterial(0, LoadedMaterial);
     }
     else
     {
         UE_LOG(LogTemp, Log, TEXT("Load Failed"));
     }
 
-   
+
 }
 
 void AMyPawn::TryLoadCookedAsset()
 {
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("TryLoadCookedAsset"));
+    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("TryLoadCookedAsset"));
     UE_LOG(LogTemp, Log, TEXT("TryLoadCookedAsset"));
 
-   /* FStreamableManager  StreamableManager;   
-    FStringAssetReference AssetReference("/Game/TestPaks/Cooked/TestMat.TestMat");
-    UObject *LoadedObject = StreamableManager.LoadSynchronous(AssetReference);
-    if (LoadedObject)
-    {
-        UE_LOG(LogTemp, Log, TEXT("Load Succeeded"));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Log, TEXT("Load Failed"));
-    }
-*/
+    /* FStreamableManager  StreamableManager;
+     FStringAssetReference AssetReference("/Game/TestPaks/Cooked/TestMat.TestMat");
+     UObject *LoadedObject = StreamableManager.LoadSynchronous(AssetReference);
+     if (LoadedObject)
+     {
+         UE_LOG(LogTemp, Log, TEXT("Load Succeeded"));
+     }
+     else
+     {
+         UE_LOG(LogTemp, Log, TEXT("Load Failed"));
+     }
+ */
 
     auto &PlatformFileInterface = FPlatformFileManager::Get().GetPlatformFile();
     auto FileHandle = PlatformFileInterface.OpenRead(*(FPaths::GameContentDir() + TEXT("TestPaks/Cooked/test.txt")));
