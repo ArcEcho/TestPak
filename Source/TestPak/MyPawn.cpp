@@ -77,18 +77,28 @@ void AMyPawn::LoadPakWithUnCookedAsset()
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("LoadPakWithUnCookedAsset"));
     UE_LOG(LogTemp, Log, TEXT("LoadPakWithUnCookedAsset"));
 
+    auto S = FPaths::GameContentDir();
+    UE_LOG(LogTemp, Log, TEXT("Before MakeStandardFilename -> %s"), *S);
+    FPaths::MakeStandardFilename(S);
+    UE_LOG(LogTemp, Log, TEXT("After MakeStandardFilename -> %s"), *S);
+
     IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
     FPakPlatformFile* PakPlatformFile = new FPakPlatformFile();
     PakPlatformFile->Initialize(&PlatformFile, TEXT(""));
     FPlatformFileManager::Get().SetPlatformFile(*PakPlatformFile);
 
     FString PakFilename = FPaths::GameDir() + TEXT("Test/Uncooked/Paks/Test.pak");
-    FString mountPoint(*(FPaths::GameContentDir() + TEXT("TestPaks/")));
+    FString mountPoint(*(FPaths::GameContentDir() + TEXT("TestPaks/QQQ/")));
+    FPaths::MakeStandardFilename(mountPoint);
 
     if (!PakPlatformFile->Mount(*PakFilename, 0, *mountPoint))
     {
         UE_LOG(LogTemp, Log, TEXT("Pak Mount Failed"));
         return;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("Pak Mount Succeeded %s"), *PakFilename);
     }
 
     {
@@ -189,7 +199,7 @@ void AMyPawn::TryLoadUnCookedAsset()
     UE_LOG(LogTemp, Log, TEXT("TryLoadUnCookedAsset"));
 
     FStreamableManager  StreamableManager;
-    FStringAssetReference AssetReference("/Game/TestPaks/TestMat.TestMat");
+    FStringAssetReference AssetReference("/Game/TestPaks/QQQ/TestMat.TestMat");
     UMaterialInterface *LoadedMaterial = StreamableManager.LoadSynchronous<UMaterialInterface>(AssetReference);
     if (LoadedMaterial)
     {
