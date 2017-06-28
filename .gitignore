@@ -67,3 +67,5 @@ DerivedDataCache/*
 *.pak
 Test/Uncooked/Scripts/paklist.txt
 Test/Cooked/Scripts/paklist.txt
+Test/Cooked/Scripts/paklist.txt
+Test/Uncooked/Scripts/paklist.txt
