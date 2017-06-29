@@ -34,11 +34,14 @@ public:
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
-    void LoadPakWtihCookedAsset();
+    void LoadPak();
 
-    void LoadPakWithUnCookedAsset();
+    void TryLoadPackageFromPak();
 
-    void TryLoadUnCookedAsset();
-    
-    void TryLoadCookedAsset();
+private:
+    void LogAndPrintToScreen(const FString &Message, const FColor &MessageColor = FColor::Purple);
+
+    struct FStreamableManager & GetStreamableManager();
+
+    UObject *TryLoadAsset(const FString &AssetShortName);
 };

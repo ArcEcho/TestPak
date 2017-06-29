@@ -1,1 +1,0 @@
-C:\Users\Administrator\Desktop\PakTest\TestPak\Test\Cooked\assets\*.* 

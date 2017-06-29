@@ -7,6 +7,7 @@
 #include "IPlatformFilePak.h"
 #include "Engine/StreamableManager.h"
 #include "PackageName.h"
+#include "TestPak.h"
 
 class FMyFileVisitor : public IPlatformFile::FDirectoryVisitor
 {
@@ -50,7 +51,7 @@ void AMyPawn::BeginPlay()
     Super::BeginPlay();
 
     //TODO
-    FPackageName::OnContentPathMounted().AddLambda([](const FString& AssetPath, const FString& ContentPath) { UE_LOG(LogTemp, Log, TEXT("OnContentPathMounted  %s %s"), *AssetPath, *ContentPath); });
+    FPackageName::OnContentPathMounted().AddLambda([](const FString& AssetPath, const FString& ContentPath) { UE_LOG(LogTestPak, Log, TEXT("OnContentPathMounted  %s %s"), *AssetPath, *ContentPath); });
 }
 
 // Called every frame
@@ -65,196 +66,139 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-    PlayerInputComponent->BindAction("TestA", IE_Pressed, this, &AMyPawn::LoadPakWithUnCookedAsset);
-    PlayerInputComponent->BindAction("TestB", IE_Pressed, this, &AMyPawn::LoadPakWtihCookedAsset);
-    PlayerInputComponent->BindAction("TestC", IE_Pressed, this, &AMyPawn::TryLoadUnCookedAsset);
-    PlayerInputComponent->BindAction("TestD", IE_Pressed, this, &AMyPawn::TryLoadCookedAsset);
-    //PlayerInputComponent->BindAction("TestE", IE_Pressed, this, &AMyPawn::HandleTestBActionInput);
+    PlayerInputComponent->BindAction("TestA", IE_Pressed, this, &AMyPawn::LoadPak);
+    PlayerInputComponent->BindAction("TestB", IE_Pressed, this, &AMyPawn::TryLoadPackageFromPak);
 }
 
-void AMyPawn::LoadPakWithUnCookedAsset()
+void AMyPawn::LoadPak()
 {
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("LoadPakWithUnCookedAsset"));
-    UE_LOG(LogTemp, Log, TEXT("LoadPakWithUnCookedAsset"));
+    LogAndPrintToScreen("LoadPak-----------------------------------------");;
 
-    auto S = FPaths::GameContentDir();
-    UE_LOG(LogTemp, Log, TEXT("Before MakeStandardFilename -> %s"), *S);
-    FPaths::MakeStandardFilename(S);
-    UE_LOG(LogTemp, Log, TEXT("After MakeStandardFilename -> %s"), *S);
+    FPakPlatformFile* PakPlatformFile = new FPakPlatformFile();                              //The FPlatformFileManager will be responsible for the life time of this.
+    PakPlatformFile->Initialize(&FPlatformFileManager::Get().GetPlatformFile(), TEXT(""));   //Just use current topmost PlatformFile as the inner lower level PlatformFile of the new PakPlatformFile.
+    FPlatformFileManager::Get().SetPlatformFile(*PakPlatformFile);                           //Set the new PakPlatformFile to the FPlatformFileManager's topmost PlatformFile. UE4 will use it to read files.
 
-    IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-    FPakPlatformFile* PakPlatformFile = new FPakPlatformFile();
-    PakPlatformFile->Initialize(&PlatformFile, TEXT(""));
-    FPlatformFileManager::Get().SetPlatformFile(*PakPlatformFile);
+    FString MountPoint = FPaths::GameContentDir() + "Paks/";
 
-    FString PakFilename = FPaths::GameDir() + TEXT("Test/Uncooked/Paks/Test.pak");
-    FString mountPoint(*(FPaths::GameContentDir() + TEXT("TestPaks/QQQ/")));
-    FPaths::MakeStandardFilename(mountPoint);
+#if WITH_EDITOR
+    FString PakFilename("F:/DesktopBak/TestPak/Test/Uncooked/Paks/Test.pak");
+#else
+    FString PakFilename("F:/DesktopBak/TestPak/Test/Cooked/Paks/Test.pak");
+#endif
 
-    if (!PakPlatformFile->Mount(*PakFilename, 0, *mountPoint))
+    if (PakPlatformFile->Mount(*PakFilename, 0, *MountPoint))
     {
-        UE_LOG(LogTemp, Log, TEXT("Pak Mount Failed"));
-        return;
+        LogAndPrintToScreen(FString::Printf(TEXT("    Succeeded to mount %s at %s"), *PakFilename, *MountPoint), FColor::Green);
     }
     else
     {
-        UE_LOG(LogTemp, Log, TEXT("Pak Mount Succeeded %s"), *PakFilename);
-    }
-
-    {
-        FMyFileVisitor MyFileVisitor;
-        PlatformFile.IterateDirectoryRecursively(*FPaths::GameContentDir(), MyFileVisitor);
-
-        UE_LOG(LogTemp, Log, TEXT("Iterate PlatformFile Begin"));
-        for (auto &filename : MyFileVisitor.Files)
-        {
-            UE_LOG(LogTemp, Log, TEXT("File         %s"), *filename);
-        }
-
-        for (auto &DirectoryName : MyFileVisitor.Directories)
-        {
-            UE_LOG(LogTemp, Log, TEXT("Directory    %s"), *DirectoryName);
-        }
-        UE_LOG(LogTemp, Log, TEXT("Iterate PlatformFile End"));
-    }
-
-    {
-        FMyFileVisitor MyFileVisitor;
-        PakPlatformFile->IterateDirectoryRecursively(*FPaths::GameContentDir(), MyFileVisitor);
-
-        UE_LOG(LogTemp, Log, TEXT("Iterate PakPlatformFile Begin"));
-        for (auto &filename : MyFileVisitor.Files)
-        {
-            UE_LOG(LogTemp, Log, TEXT("File         %s"), *filename);
-        }
-
-        for (auto &DirectoryName : MyFileVisitor.Directories)
-        {
-            UE_LOG(LogTemp, Log, TEXT("Directory    %s"), *DirectoryName);
-        }
-        UE_LOG(LogTemp, Log, TEXT("Iterate PakPlatformFile End"));
-    }
-}
-
-void AMyPawn::LoadPakWtihCookedAsset()
-{
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("LoadPakWtihCookedAsset"));
-    UE_LOG(LogTemp, Log, TEXT("LoadPakWtihCookedAsset"));
-
-    IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-    FPakPlatformFile* PakPlatformFile = new FPakPlatformFile();
-    PakPlatformFile->Initialize(&PlatformFile, TEXT(""));
-    FPlatformFileManager::Get().SetPlatformFile(*PakPlatformFile);
-
-
-    FString PakFilename = FPaths::GameDir() + TEXT("Test/Cooked/Paks/Test.pak");
-    //FString PakFilename = TEXT("F:/DesktopBak/ZZZ/TestPak/Test/Cooked/Paks/Test.pak");
-    FString mountPoint(*(FPaths::GameContentDir() + TEXT("TestPaks/")));
-
-    if (!PakPlatformFile->Mount(*PakFilename, 0, *mountPoint))
-    {
-        UE_LOG(LogTemp, Log, TEXT("Pak Mount Failed"));
+        LogAndPrintToScreen(FString::Printf(TEXT("    Failed to mount %s at %s"), *PakFilename, *MountPoint), FColor::Red);
         return;
     }
 
+    //Log what have been mounted by the pak file.
     {
+        UE_LOG(LogTestPak, Log, TEXT("    Log what have been mounted by the pak file:"));
         FMyFileVisitor MyFileVisitor;
-        PlatformFile.IterateDirectoryRecursively(*FPaths::GameContentDir(), MyFileVisitor);
+        FPlatformFileManager::Get().GetPlatformFile().IterateDirectoryRecursively(*MountPoint, MyFileVisitor);
 
-        UE_LOG(LogTemp, Log, TEXT("Iterate PlatformFile Begin"));
         for (auto &filename : MyFileVisitor.Files)
         {
-            UE_LOG(LogTemp, Log, TEXT("File         %s"), *filename);
+            UE_LOG(LogTestPak, Log, TEXT("        %s"), *filename);
         }
 
-        for (auto &DirectoryName : MyFileVisitor.Directories)
-        {
-            UE_LOG(LogTemp, Log, TEXT("Directory    %s"), *DirectoryName);
-        }
-        UE_LOG(LogTemp, Log, TEXT("Iterate PlatformFile End"));
+        UE_LOG(LogTestPak, Log, TEXT(" "));
     }
 
+    //Log what can be accessed from the FPlatformFileManager's topmost IPlatforFile.
     {
+        UE_LOG(LogTestPak, Log, TEXT("    Log what can be accessed in the game content dir by the FPlatformFileManager's topmost IPlatforFile:"));
         FMyFileVisitor MyFileVisitor;
-        PakPlatformFile->IterateDirectoryRecursively(*FPaths::GameContentDir(), MyFileVisitor);
+        FPlatformFileManager::Get().GetPlatformFile().IterateDirectoryRecursively(*FPaths::GameContentDir(), MyFileVisitor);
 
-        UE_LOG(LogTemp, Log, TEXT("Iterate PakPlatformFile Begin"));
         for (auto &filename : MyFileVisitor.Files)
         {
-            UE_LOG(LogTemp, Log, TEXT("File         %s"), *filename);
+            UE_LOG(LogTestPak, Log, TEXT("        %s"), *filename);
         }
 
-        for (auto &DirectoryName : MyFileVisitor.Directories)
-        {
-            UE_LOG(LogTemp, Log, TEXT("Directory    %s"), *DirectoryName);
-        }
-        UE_LOG(LogTemp, Log, TEXT("Iterate PakPlatformFile End"));
+        UE_LOG(LogTestPak, Log, TEXT(" "));
     }
+
+    LogAndPrintToScreen("LoadPak-----------------------------------------");;
 }
 
-
-void AMyPawn::TryLoadUnCookedAsset()
+void AMyPawn::TryLoadPackageFromPak()
 {
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("TryLoadUnCookedAsset"));
-    UE_LOG(LogTemp, Log, TEXT("TryLoadUnCookedAsset"));
+    LogAndPrintToScreen("TryLoadPackageFromPak-----------------------------------------");
 
-    FStreamableManager  StreamableManager;
-    FStringAssetReference AssetReference("/Game/TestPaks/QQQ/TestMat.TestMat");
-    UMaterialInterface *LoadedMaterial = StreamableManager.LoadSynchronous<UMaterialInterface>(AssetReference);
-    if (LoadedMaterial)
+    //Try to read txt file content
     {
-        UE_LOG(LogTemp, Log, TEXT("Load Succeeded"));
-        Mesh->SetMaterial(0, LoadedMaterial);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Log, TEXT("Load Failed"));
-    }
-
-
-}
-
-void AMyPawn::TryLoadCookedAsset()
-{
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("TryLoadCookedAsset"));
-    UE_LOG(LogTemp, Log, TEXT("TryLoadCookedAsset"));
-
-    FStreamableManager  StreamableManager;
-    FStringAssetReference AssetReference("/Game/TestPaks/TestMat.TestMat");
-    UMaterialInterface *LoadedMaterial = StreamableManager.LoadSynchronous<UMaterialInterface>(AssetReference);
-    if (LoadedMaterial)
-    {
-        UE_LOG(LogTemp, Log, TEXT("Load Succeeded"));
-        Mesh->SetMaterial(0, LoadedMaterial);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Log, TEXT("Load Failed"));
-    }
-
-    auto &PlatformFileInterface = FPlatformFileManager::Get().GetPlatformFile();
-    auto FileHandle = PlatformFileInterface.OpenRead(*(FPaths::GameContentDir() + TEXT("TestPaks/test.txt")));
-
-    if (FileHandle)
-    {
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Read txt Succeeded"));
-
+        auto FileHandle = FPlatformFileManager::Get().GetPlatformFile().OpenRead(*(FPaths::GameContentDir() + TEXT("Paks/test.txt")));
         int32 MyInteger{ -1 };
-        auto bSucceeded = FileHandle->Read(reinterpret_cast<uint8*>(&MyInteger), sizeof(int32));
-        if (!bSucceeded)
+        bool bSucceeded = false;
+        if (FileHandle)
         {
-            GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, TEXT("Failed to read"));
+            bSucceeded = FileHandle->Read(reinterpret_cast<uint8*>(&MyInteger), sizeof(int32));
+            delete FileHandle;
+        }
+
+        if (!FileHandle)
+        {
+            LogAndPrintToScreen("    Failed to open txt file in pak", FColor::Red);
         }
         else
         {
-            GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Yellow, FString::Printf(TEXT("Read integer is %d"), MyInteger));
+            if (bSucceeded)
+            {
+                LogAndPrintToScreen(FString::Printf(TEXT("    Succeeded to read txt file content, and the read integer is %d"), MyInteger), FColor::Green);
+            }
+            else
+            {
+                LogAndPrintToScreen("    Succeeded to open txt file in pak, but failed to read the file content", FColor::Red);
+            }
         }
+    }
 
-        delete FileHandle;
+    //Try to load static mesh
+    TryLoadAsset("SM_Test");
+
+    //Try to load texture
+    TryLoadAsset("T_Test");
+
+    //Try to load material
+    TryLoadAsset("M_Test");
+
+    LogAndPrintToScreen("TryLoadPackageFromPak-----------------------------------------");;
+}
+
+void AMyPawn::LogAndPrintToScreen(const FString &Message, const FColor &MessageColor /*= FColor::Purple*/)
+{
+    UE_LOG(LogTestPak, Log, TEXT("%s"), *Message);
+    GEngine->AddOnScreenDebugMessage(-1, 5.0f, MessageColor, *Message);
+}
+
+FStreamableManager & AMyPawn::GetStreamableManager()
+{
+    static FStreamableManager  StreamableManager;
+    return StreamableManager;
+}
+
+UObject * AMyPawn::TryLoadAsset(const FString &AssetShortName)
+{
+    FString AssetName("/Game/Paks/");
+    AssetName += AssetShortName + "." + AssetShortName;
+
+    FStringAssetReference AssetReference(AssetName);
+    auto Result = AssetReference.TryLoad();
+
+    if (Result)
+    {
+        LogAndPrintToScreen(FString::Printf(TEXT("    Load %s Succeeded"), *AssetName), FColor::Green);
     }
     else
     {
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Read txt failed"));
-
+        LogAndPrintToScreen(FString::Printf(TEXT("    Load %s Failed"), *AssetName), FColor::Red);
     }
+
+    return  Result;
 }
