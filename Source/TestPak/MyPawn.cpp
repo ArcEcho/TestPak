@@ -51,7 +51,7 @@ void AMyPawn::BeginPlay()
     Super::BeginPlay();
 
     //TODO
-    FPackageName::OnContentPathMounted().AddLambda([](const FString& AssetPath, const FString& ContentPath) { UE_LOG(LogTestPak, Log, TEXT("OnContentPathMounted  %s %s"), *AssetPath, *ContentPath); });
+    FPackageName::OnContentPathMounted().AddLambda([](const FString& AssetPath, const FString& ContentPath) { UE_LOG(LogTemp, Log, TEXT("OnContentPathMounted  %s %s"), *AssetPath, *ContentPath); });
 }
 
 // Called every frame
@@ -98,30 +98,30 @@ void AMyPawn::LoadPak()
 
     //Log what have been mounted by the pak file.
     {
-        UE_LOG(LogTestPak, Log, TEXT("    Log what have been mounted by the pak file:"));
+        UE_LOG(LogTemp, Log, TEXT("    Log what have been mounted by the pak file:"));
         FMyFileVisitor MyFileVisitor;
         FPlatformFileManager::Get().GetPlatformFile().IterateDirectoryRecursively(*MountPoint, MyFileVisitor);
 
         for (auto &filename : MyFileVisitor.Files)
         {
-            UE_LOG(LogTestPak, Log, TEXT("        %s"), *filename);
+            UE_LOG(LogTemp, Log, TEXT("        %s"), *filename);
         }
 
-        UE_LOG(LogTestPak, Log, TEXT(" "));
+        UE_LOG(LogTemp, Log, TEXT(" "));
     }
 
     //Log what can be accessed from the FPlatformFileManager's topmost IPlatforFile.
     {
-        UE_LOG(LogTestPak, Log, TEXT("    Log what can be accessed in the game content dir by the FPlatformFileManager's topmost IPlatforFile:"));
+        UE_LOG(LogTemp, Log, TEXT("    Log what can be accessed in the game content dir by the FPlatformFileManager's topmost IPlatforFile:"));
         FMyFileVisitor MyFileVisitor;
         FPlatformFileManager::Get().GetPlatformFile().IterateDirectoryRecursively(*FPaths::GameContentDir(), MyFileVisitor);
 
         for (auto &filename : MyFileVisitor.Files)
         {
-            UE_LOG(LogTestPak, Log, TEXT("        %s"), *filename);
+            UE_LOG(LogTemp, Log, TEXT("        %s"), *filename);
         }
 
-        UE_LOG(LogTestPak, Log, TEXT(" "));
+        UE_LOG(LogTemp, Log, TEXT(" "));
     }
 
     LogAndPrintToScreen("LoadPak-----------------------------------------");;
@@ -173,7 +173,7 @@ void AMyPawn::TryLoadPackageFromPak()
 
 void AMyPawn::LogAndPrintToScreen(const FString &Message, const FColor &MessageColor /*= FColor::Purple*/)
 {
-    UE_LOG(LogTestPak, Log, TEXT("%s"), *Message);
+    UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, MessageColor, *Message);
 }
 
