@@ -80,21 +80,51 @@ void AMyPawn::LoadPak()
 
     FString MountPoint = FPaths::GameContentDir() + "Paks/";
 
-#if WITH_EDITOR
-    FString PakFilename("F:/DesktopBak/TestPak/Test/Uncooked/Paks/Test.pak");
-#else
-    FString PakFilename("F:/DesktopBak/TestPak/Test/Cooked/Paks/Test.pak");
-#endif
+    {
+        FString PakFilename = FPaths::GameDir() + TEXT("Test/Cooked/Paks/TestA.pak");
 
-    if (PakPlatformFile->Mount(*PakFilename, 0, *MountPoint))
-    {
-        LogAndPrintToScreen(FString::Printf(TEXT("    Succeeded to mount %s at %s"), *PakFilename, *MountPoint), FColor::Green);
+
+        if (PakPlatformFile->Mount(*PakFilename, 0, *MountPoint))
+        {
+            LogAndPrintToScreen(FString::Printf(TEXT("    Succeeded to mount %s at %s"), *PakFilename, *MountPoint), FColor::Green);
+        }
+        else
+        {
+            LogAndPrintToScreen(FString::Printf(TEXT("    Failed to mount %s at %s"), *PakFilename, *MountPoint), FColor::Red);
+            return;
+        }
     }
-    else
+
+
     {
-        LogAndPrintToScreen(FString::Printf(TEXT("    Failed to mount %s at %s"), *PakFilename, *MountPoint), FColor::Red);
-        return;
+        FString PakFilename = FPaths::GameDir() + TEXT("Test/Cooked/Paks/TestB.pak");
+
+
+        if (PakPlatformFile->Mount(*PakFilename, 0, *MountPoint))
+        {
+            LogAndPrintToScreen(FString::Printf(TEXT("    Succeeded to mount %s at %s"), *PakFilename, *MountPoint), FColor::Green);
+        }
+        else
+        {
+            LogAndPrintToScreen(FString::Printf(TEXT("    Failed to mount %s at %s"), *PakFilename, *MountPoint), FColor::Red);
+            return;
+        }
     }
+
+    //{
+    //    FString PakFilename = FPaths::GameDir() + TEXT("Test/Cooked/Paks/Test.pak");
+
+
+    //    if (PakPlatformFile->Mount(*PakFilename, 0, *MountPoint))
+    //    {
+    //        LogAndPrintToScreen(FString::Printf(TEXT("    Succeeded to mount %s at %s"), *PakFilename, *MountPoint), FColor::Green);
+    //    }
+    //    else
+    //    {
+    //        LogAndPrintToScreen(FString::Printf(TEXT("    Failed to mount %s at %s"), *PakFilename, *MountPoint), FColor::Red);
+    //        return;
+    //    }
+    //}
 
     //Log what have been mounted by the pak file.
     {
@@ -160,7 +190,11 @@ void AMyPawn::TryLoadPackageFromPak()
     }
 
     //Try to load static mesh
-    TryLoadAsset("SM_Test");
+    auto LoadedMesh = Cast<UStaticMesh>( TryLoadAsset("SM_Test"));
+    if (LoadedMesh)
+    {
+        Mesh->SetStaticMesh(LoadedMesh);
+    }
 
     //Try to load texture
     TryLoadAsset("T_Test");
