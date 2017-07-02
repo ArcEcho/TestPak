@@ -19,16 +19,23 @@ class TESTPAK_API UMyGameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 public:
+
+    UFUNCTION(BlueprintCallable, Category = TestPak)
     void MountPak(const FString &PakFilename);
+
+    UFUNCTION(BlueprintCallable, Category = TestPak)
     void UnmountPak(const FString &PakFilename);
+
+    UFUNCTION(BlueprintCallable, Category = TestPak)
+        FString GetPakRootDir();
 
 protected:
     void LogAndPrintToScreen(const FString &Message, const FColor &MessageColor = FColor::Purple);
  
-
 protected:
-    
+ 
     FPakPlatformFile* MyPakPlatformFile;
 
     FStreamableManager &GetStreamableManager();
+
 };

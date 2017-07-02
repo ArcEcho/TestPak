@@ -30,10 +30,10 @@ public:
     TArray<FString> Directories;
 };
 
-
-
 void UMyGameInstance::MountPak(const FString &PakFilename)
 {
+    //It is not necessary to new a FPakPlatformFile object, because you can mount multiple paks
+    // to one pak platform file.
     if (MyPakPlatformFile == nullptr)
     {
         MyPakPlatformFile = new FPakPlatformFile();                                                 //The FPlatformFileManager will be responsible for the life time of this.
@@ -52,11 +52,32 @@ void UMyGameInstance::MountPak(const FString &PakFilename)
         return;
     }
 
-    //Log how many pak files was mounted.
-    //TODO
+    //Log all files can be accessed in the game content directory from MyPakPlatformFile node, includes inner lower PlatformFile node recursively.
+    //Here MyPakPlatformFile is regarded as the topmost node of the visit chain.
+    //
+    {
+        UE_LOG(LogTemp, Log, TEXT("    Log what can be accessed in the game content dir by the FPlatformFileManager's topmost IPlatforFile:"));
+        FMyFileVisitor MyFileVisitor;
+        MyPakPlatformFile->IterateDirectoryRecursively(*FPaths::GameContentDir(), MyFileVisitor);
+        for (auto &filename : MyFileVisitor.Files)
+        {
+            UE_LOG(LogTemp, Log, TEXT("        %s"), *filename);
+        }
+        UE_LOG(LogTemp, Log, TEXT(" "));
+    }
+}
 
-    //Log what files the current pak file provides.
-    //TODO 
+void UMyGameInstance::UnmountPak(const FString &PakFilename)
+{
+    if (MyPakPlatformFile->Unmount(*PakFilename))
+    {
+        LogAndPrintToScreen(FString::Printf(TEXT("    Succeeded to unmount %s "), *PakFilename), FColor::Green);
+    }
+    else
+    {
+        LogAndPrintToScreen(FString::Printf(TEXT("    Failed to mount %s"), *PakFilename), FColor::Red);
+        return;
+    }
 
     //Log all files can be accessed in the game content directory from MyPakPlatformFile node, includes inner lower PlatformFile node recursively.
     //Here MyPakPlatformFile is regarded as the topmost node of the visit chain.
@@ -73,9 +94,10 @@ void UMyGameInstance::MountPak(const FString &PakFilename)
     }
 }
 
-void UMyGameInstance::UnmountPak(const FString &PakFilepath)
+FString UMyGameInstance::GetPakRootDir()
 {
-    //TODO
+    FString Filename = FPaths::GameDir();
+    return FPaths::ConvertRelativePathToFull(Filename);
 }
 
 void UMyGameInstance::LogAndPrintToScreen(const FString &Message, const FColor &MessageColor /*= FColor::Purple*/)
