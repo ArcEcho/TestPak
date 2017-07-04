@@ -67,3 +67,6 @@ DerivedDataCache/*
 
 Test/**/*.pak
 Test/**/*.txt
+
+Plugins/**/Binaries/*
+Plugins/**/Intermediate/*

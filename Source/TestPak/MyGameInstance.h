@@ -29,6 +29,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = TestPak)
         FString GetPakRootDir();
 
+    UFUNCTION(BlueprintCallable, Category = TestPak)
+        void GatherReferenceInformation();
+
 protected:
     void LogAndPrintToScreen(const FString &Message, const FColor &MessageColor = FColor::Purple);
  
