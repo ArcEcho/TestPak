@@ -18,3 +18,6 @@ I just made all the assets in another project. And use two way to generate pak f
 + (Optional) Yon can run pak_extract bat to see what was packaged and how they ary organized.
 + Packaging TestPak project, and copy all the files from ./paks to your packaging destination ./dest/TestPak/MyPaks
 + Run game and test. 
+
+### aditional
+1.Add a plugin to export asset dependencies.

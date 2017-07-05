@@ -15,18 +15,25 @@ class FExportAssetDependeciesModule : public IModuleInterface
 {
 public:
 
-	/** IModuleInterface implementation */
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
-	
-	/** This function will be bound to Command. */
-	void PluginButtonClicked();
-	
-private:
+    /** IModuleInterface implementation */
+    virtual void StartupModule() override;
+    virtual void ShutdownModule() override;
 
-	void AddToolbarExtension(FToolBarBuilder& Builder);
-	void AddMenuExtension(FMenuBuilder& Builder);
+    /** This function will be bound to Command. */
+    void PluginButtonClicked();
 
 private:
-	TSharedPtr<class FUICommandList> PluginCommands;
+
+    void AddToolbarExtension(FToolBarBuilder& Builder);
+    void AddMenuExtension(FMenuBuilder& Builder);
+
+    void ExportAssetDependecies();
+
+    void GatherDependenciesInfo(const UExportAssetDependeciesSettings * CurrentSettings, TMap<FString, TArray<FString>> &Results);
+    
+    /** This will save the dependencies information to the OutputPath/AssetDependencies.json */
+    void SaveDependicesInfo(const FString &OutputFilename, const TMap<FString, TArray<FString>> &Results);
+
+private:
+    TSharedPtr<class FUICommandList> PluginCommands;
 };

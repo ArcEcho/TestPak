@@ -20,4 +20,12 @@ public:
     /** Determine if scan assets recursively.*/
     UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Default)
         bool bShouldExportRecursively;
+
+    /** Determine whether to export dependencies only in content dir.*/
+    UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Default)
+        bool bOnlyExportWhatInGameConent;
+
+
+    UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Default)
+        FDirectoryPath OutputPath;
 };

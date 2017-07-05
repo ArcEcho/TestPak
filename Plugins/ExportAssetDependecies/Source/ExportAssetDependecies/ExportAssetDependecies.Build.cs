@@ -44,6 +44,7 @@ public class ExportAssetDependecies : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "Json"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
