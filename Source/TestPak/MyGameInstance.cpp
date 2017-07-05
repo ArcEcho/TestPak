@@ -9,11 +9,10 @@
 #include "AssetRegistryModule.h"
 #include "TestPak.h"
 
-
 class FMyFileVisitor : public IPlatformFile::FDirectoryVisitor
 {
-public:
-    virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory) override
+  public:
+    virtual bool Visit(const TCHAR *FilenameOrDirectory, bool bIsDirectory) override
     {
         if (!bIsDirectory)
         {
@@ -37,9 +36,9 @@ void UMyGameInstance::MountPak(const FString &PakFilename)
     // to one pak platform file.
     if (MyPakPlatformFile == nullptr)
     {
-        MyPakPlatformFile = new FPakPlatformFile();                                                 //The FPlatformFileManager will be responsible for the life time of this.
-        MyPakPlatformFile->Initialize(&FPlatformFileManager::Get().GetPlatformFile(), TEXT(""));    //Just use current topmost PlatformFile as the inner lower level PlatformFile of the new PakPlatformFile.
-        FPlatformFileManager::Get().SetPlatformFile(*MyPakPlatformFile);                            //Set the new PakPlatformFile to the FPlatformFileManager's topmost PlatformFile. UE4 will use it to read files.
+        MyPakPlatformFile = new FPakPlatformFile();                                              //The FPlatformFileManager will be responsible for the life time of this.
+        MyPakPlatformFile->Initialize(&FPlatformFileManager::Get().GetPlatformFile(), TEXT("")); //Just use current topmost PlatformFile as the inner lower level PlatformFile of the new PakPlatformFile.
+        FPlatformFileManager::Get().SetPlatformFile(*MyPakPlatformFile);                         //Set the new PakPlatformFile to the FPlatformFileManager's topmost PlatformFile. UE4 will use it to read files.
     }
 
     FString MountPoint = FPaths::GameContentDir();
@@ -101,57 +100,16 @@ FString UMyGameInstance::GetPakRootDir()
     return FPaths::ConvertRelativePathToFull(Filename);
 }
 
-void UMyGameInstance::GatherReferenceInformation()
+void UMyGameInstance::MoutTestSepratedPaks()
 {
-    //FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-    //
-    //if (AssetRegistryModule.Get().IsLoadingAssets())
-    //{
-    //    // We are still discovering assets, listen for the completion delegate before building the graph
-    //    //if (!AssetRegistryModule.Get().OnFilesLoaded().IsBoundToObject(this))
-    //    //{
-    //    //    AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SReferenceViewer::OnInitialAssetRegistrySearchComplete);
-    //    //}
-    //}    
-    //
-    //UE_LOG(LogTemp, Warning, TEXT("++++++++++++++++++++++++"));
+    FString TargetDir = FPaths::GameDir() + "/SplitedPaks/";
+    FMyFileVisitor MyFileVisitor;
+    FPlatformFileManager::Get().GetPlatformFile().IterateDirectoryRecursively(*TargetDir, MyFileVisitor);
 
-    //TArray<FName> D;
-    //bool bD = AssetRegistryModule.Get().GetDependencies("/Game/Maps/InitialMap", D, EAssetRegistryDependencyType::Hard);
-    //for (auto &d : D)
-    //{
-    //    UE_LOG(LogTemp, Warning, TEXT("D ---- %s"), *d.ToString());
-    //}
-
-    //TArray<FName> R;
-    //bool bR = AssetRegistryModule.Get().GetReferencers("/Game/Maps/InitialMap", R, EAssetRegistryDependencyType::Hard);
-    //for (auto &r : R)
-    //{
-    //    UE_LOG(LogTemp, Warning, TEXT("R ---- %s"), *r.ToString());
-    //}
-
-    //UE_LOG(LogTemp, Warning, TEXT("++++++++++++++++++++++++"));
-
-    //if (bD)
-    //{
-    //    UE_LOG(LogTemp, Warning, TEXT("DDDDDDDDDDDDDDDDDDDDD"));
-    //}
-
-    //if (bR)
-    //{
-    //    UE_LOG(LogTemp, Warning, TEXT("RRRRRRRRRRRRRRRRRRRR"))
-    //}
-
+    for (auto &filename : MyFileVisitor.Files)
     {
-        FMyFileVisitor MyFileVisitor;
-        FPlatformFileManager::Get().GetPlatformFile().IterateDirectoryRecursively(TEXT("C:\\Users\\zhoumy\\Desktop\\TestPak\\ProjectUtils\\TestOutput"), MyFileVisitor);
-
-        for (auto &filename : MyFileVisitor.Files)
-        {
-            MountPak(filename);
-        }
+        MountPak(filename);
     }
-
 }
 
 void UMyGameInstance::LogAndPrintToScreen(const FString &Message, const FColor &MessageColor /*= FColor::Purple*/)
@@ -160,9 +118,8 @@ void UMyGameInstance::LogAndPrintToScreen(const FString &Message, const FColor &
     GEngine->AddOnScreenDebugMessage(-1, 5.0f, MessageColor, *Message);
 }
 
-FStreamableManager & UMyGameInstance::GetStreamableManager()
+FStreamableManager &UMyGameInstance::GetStreamableManager()
 {
-    static FStreamableManager  StreamableManager;
+    static FStreamableManager StreamableManager;
     return StreamableManager;
 }
-
