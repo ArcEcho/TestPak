@@ -70,3 +70,5 @@ Test/**/*.txt
 
 Plugins/**/Binaries/*
 Plugins/**/Intermediate/*
+
+ProjectUtils/**/*.pak

@@ -6,7 +6,7 @@ import os.path
 def DetectUnrealEngineRootDir(inExpectedVersion):
     #Try to open Unreal Engine reg key, this will fail if it has not been installed.
     try:   
-        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r"SOFTWARE\EpicGames\Unreal Engine")
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,r"SOFTWARE\\EpicGames\\Unreal Engine")
     except WindowsError:
         raise Exception("Error:No Unreal Engine was installed, check and retry!")
     
@@ -39,10 +39,10 @@ if __name__ == "__main__":
     urealPakToolPath = engineRootDir + "\\Engine\\Binaries\\Win64\\UnrealPak.exe"
     outputPakFilePath = myConfigParser['PakConfig']['OutputPakFilePath']
     pakResponseFilePath = myConfigParser['PakConfig']['PakResponsibleFilePath']
-    engineDir=engineRootDir + "\\Engine\\
-    projectDir="C:\Users\zhoumy\Desktop\TestPak"
-    pakLogOutputPath="C:\Users\zhoumy\Desktop\TestPak\\pak.log"
-    openOrderFilePath="C:\Users\zhoumy\Desktop\TestPak\\order.log"
+    engineDir = engineRootDir + "\\Engine\\"
+    projectDir="C:\\Users\\zhoumy\\Desktop\\TestPak"
+    pakLogOutputPath="C:Users\\zhoumy\\Desktop\\TestPak\\pak.log"
+    openOrderFilePath="C:\\Users\\zhoumy\\Desktop\\TestPak\\order.log"
 
     pakCmd = pakCmdTemplate.format(urealPakToolPath, outputPakFilePath, pakResponseFilePath )
     print(pakCmd)

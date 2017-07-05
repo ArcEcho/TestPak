@@ -103,44 +103,55 @@ FString UMyGameInstance::GetPakRootDir()
 
 void UMyGameInstance::GatherReferenceInformation()
 {
-    FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-    
-    if (AssetRegistryModule.Get().IsLoadingAssets())
-    {
-        // We are still discovering assets, listen for the completion delegate before building the graph
-        //if (!AssetRegistryModule.Get().OnFilesLoaded().IsBoundToObject(this))
-        //{
-        //    AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SReferenceViewer::OnInitialAssetRegistrySearchComplete);
-        //}
-    }    
-    
-    UE_LOG(LogTemp, Warning, TEXT("++++++++++++++++++++++++"));
+    //FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+    //
+    //if (AssetRegistryModule.Get().IsLoadingAssets())
+    //{
+    //    // We are still discovering assets, listen for the completion delegate before building the graph
+    //    //if (!AssetRegistryModule.Get().OnFilesLoaded().IsBoundToObject(this))
+    //    //{
+    //    //    AssetRegistryModule.Get().OnFilesLoaded().AddSP(this, &SReferenceViewer::OnInitialAssetRegistrySearchComplete);
+    //    //}
+    //}    
+    //
+    //UE_LOG(LogTemp, Warning, TEXT("++++++++++++++++++++++++"));
 
-    TArray<FName> D;
-    bool bD = AssetRegistryModule.Get().GetDependencies("/Game/Maps/InitialMap", D, EAssetRegistryDependencyType::Hard);
-    for (auto &d : D)
+    //TArray<FName> D;
+    //bool bD = AssetRegistryModule.Get().GetDependencies("/Game/Maps/InitialMap", D, EAssetRegistryDependencyType::Hard);
+    //for (auto &d : D)
+    //{
+    //    UE_LOG(LogTemp, Warning, TEXT("D ---- %s"), *d.ToString());
+    //}
+
+    //TArray<FName> R;
+    //bool bR = AssetRegistryModule.Get().GetReferencers("/Game/Maps/InitialMap", R, EAssetRegistryDependencyType::Hard);
+    //for (auto &r : R)
+    //{
+    //    UE_LOG(LogTemp, Warning, TEXT("R ---- %s"), *r.ToString());
+    //}
+
+    //UE_LOG(LogTemp, Warning, TEXT("++++++++++++++++++++++++"));
+
+    //if (bD)
+    //{
+    //    UE_LOG(LogTemp, Warning, TEXT("DDDDDDDDDDDDDDDDDDDDD"));
+    //}
+
+    //if (bR)
+    //{
+    //    UE_LOG(LogTemp, Warning, TEXT("RRRRRRRRRRRRRRRRRRRR"))
+    //}
+
     {
-        UE_LOG(LogTemp, Warning, TEXT("D ---- %s"), *d.ToString());
+        FMyFileVisitor MyFileVisitor;
+        FPlatformFileManager::Get().GetPlatformFile().IterateDirectoryRecursively(TEXT("C:\\Users\\zhoumy\\Desktop\\TestPak\\ProjectUtils\\TestOutput"), MyFileVisitor);
+
+        for (auto &filename : MyFileVisitor.Files)
+        {
+            MountPak(filename);
+        }
     }
 
-    TArray<FName> R;
-    bool bR = AssetRegistryModule.Get().GetReferencers("/Game/Maps/InitialMap", R, EAssetRegistryDependencyType::Hard);
-    for (auto &r : R)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("R ---- %s"), *r.ToString());
-    }
-
-    UE_LOG(LogTemp, Warning, TEXT("++++++++++++++++++++++++"));
-
-    if (bD)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("DDDDDDDDDDDDDDDDDDDDD"));
-    }
-
-    if (bR)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("RRRRRRRRRRRRRRRRRRRR"))
-    }
 }
 
 void UMyGameInstance::LogAndPrintToScreen(const FString &Message, const FColor &MessageColor /*= FColor::Purple*/)
