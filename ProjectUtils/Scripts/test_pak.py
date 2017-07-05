@@ -2,7 +2,16 @@ import configparser
 import winreg
 import subprocess
 import os.path
-from hashlib import blake2b
+import os
+import shutil
+
+def GetUnrealPakToolPath():
+    myConfigParser = configparser.ConfigParser()
+    myConfigParser.read("PakTestConfig.ini")
+    EngineRootDir = myConfigParser['BaseConfig']['EngineRootDir']
+    toolPath = EngineRootDir + "\\Engine\\Binaries\\Win64\\UnrealPak.exe" 
+    return os.path.normpath(toolPath)
+
 
 def DetectUnrealEngineRootDir(inExpectedVersion):
     #Try to open Unreal Engine reg key, this will fail if it has not been installed.
@@ -30,7 +39,7 @@ def GetAllAssetsInCookedContent(targetCookedContentDir):
 
 def PakFile(outputPakFileDir, targetPackagePathRootDir, targetPackagePath ):
     pakCmdTemplate = '"{}" "{}" "{}" "{}"'
-    urealPakToolPath = "C:\\Program Files\\Epic Games\\UE_4.16\Engine\\Binaries\\Win64\\UnrealPak.exe"
+    urealPakToolPath = GetUnrealPakToolPath()
 
     outputPakFileDir = os.path.normpath(outputPakFileDir)
     targetPackagePathRootDir = os.path.normpath(targetPackagePathRootDir)
@@ -41,21 +50,24 @@ def PakFile(outputPakFileDir, targetPackagePathRootDir, targetPackagePath ):
     outputPakFilePath = os.path.join(outputPakFileDir, hashStr + ".pak")
     dummyPackagePath = os.path.join(targetPackagePathRootDir, "dummy.uasset")
 
-    # print(outputPakFilePath)
-    # print(targetPackagePath)
-    # print(dummyPackagePath)
+
 
     pakCmd = pakCmdTemplate.format(urealPakToolPath, outputPakFilePath, targetPackagePathWithWildcard, dummyPackagePath )
-    print(pakCmd)
     subprocess.call(pakCmd, shell=True)
 
 
 if __name__ == "__main__":
+    targetCookedContentDir = os.path.abspath("..\\..\\CookedContentFromAnotherProject\\")
+    outputPakFileDir =  os.path.abspath("..\\TestOutput")
+    outputPakFileDirPendingDelete =  os.path.abspath("..\\TestOutput_pending_delete")
 
-    targetCookedContentDir = "C:\\Users\\zhoumy\\Desktop\\TestPak\\CookedContentFromAnotherProject\\"
+
+    os.rename(outputPakFileDir, outputPakFileDirPendingDelete)
+    shutil.rmtree(outputPakFileDirPendingDelete)
+    
     assets = GetAllAssetsInCookedContent(targetCookedContentDir)
     for assetName in assets:
-        PakFile("C:\\Users\\zhoumy\\Desktop\\TestPak\\ProjectUtils\\TestOutput", targetCookedContentDir, assetName)
+        PakFile(outputPakFileDir, targetCookedContentDir, assetName)
     
     
 
