@@ -1,2 +1,0 @@
-"C:\Users\zhoumy\Desktop\TestPak\CookedContentFromAnotherProject\Textures\T_Test.uasset"
-"C:\Users\zhoumy\Desktop\TestPak\CookedContentFromAnotherProject\dummy.uasset"
