@@ -22,9 +22,9 @@ if __name__ == "__main__":
         os.rename(splitedPaksTempDir, splitedPaksTempDirPendingDelete)
         shutil.rmtree(splitedPaksTempDirPendingDelete)
     
-    assets = test_lib.GetAllAssetsInCookedContent(contentProviderProjectCookedContentDir)
-    for assetName in assets:
-        test_lib.GeneratePakFileKeepRelativePath(splitedPaksTempDir, contentProviderProjectCookedContentDir, assetName)
+    assetPackages = test_lib.GetAllAssetPackagesInCookedContent(contentProviderProjectCookedContentDir)
+    for assetPackage in assetPackages:
+        test_lib.GenerateSplitedPaks(splitedPaksTempDir, contentProviderProjectCookedContentDir, assetPackage)
     
     
 

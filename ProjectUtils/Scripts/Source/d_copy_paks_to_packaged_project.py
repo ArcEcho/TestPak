@@ -3,6 +3,7 @@ import winreg
 import subprocess
 import os.path
 import re
+import shutil
 
 import test_lib
 
@@ -15,7 +16,11 @@ if __name__ == "__main__":
     
     srcDir =  os.path.abspath(os.path.join(test_lib.GetCurrentProjectRootDir(), "Saved\\ProjectUtils\\SplitedPaksTemp\\"))
     destDir =  os.path.normpath(os.path.join(packagedProjectOutputDir, 'WindowsNoEditor\\TestPak\\SplitedPaks\\'))
-    print(srcDir, destDir)
+    destDirPendingDelete = os.path.normpath(os.path.join(packagedProjectOutputDir, 'WindowsNoEditor\\TestPak\\SplitedPaks_pending_delete\\'))
+    
+    if os.path.exists(destDir):
+        os.rename(destDir, destDirPendingDelete)
+        shutil.rmtree(destDirPendingDelete)
 
     subprocess.call( 'md "{}"\n'.format(destDir), shell=True)
     subprocess.call( 'copy /y "{}" "{}"'.format(srcDir, destDir), shell=True)

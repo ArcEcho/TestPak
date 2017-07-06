@@ -69,4 +69,4 @@ Plugins/**/Binaries/*
 Plugins/**/Intermediate/*
 
 ProjectUtils/**/*.pak
-ProjectUtils/Scripts/__pycache__/*
+ProjectUtils/**/__pycache__/*

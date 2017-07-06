@@ -1,0 +1,2 @@
+@echo off
+python Source\b_handle_content_provider_project_cooked_content.py
