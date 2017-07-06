@@ -30,7 +30,7 @@ public:
         FString GetPakRootDir();
 
     UFUNCTION(BlueprintCallable, Category = TestPak)
-        void MoutTestSepratedPaks();
+        void MountTestSplitedPaks();
 
 protected:
     void LogAndPrintToScreen(const FString &Message, const FColor &MessageColor = FColor::Purple);

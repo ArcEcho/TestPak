@@ -100,7 +100,7 @@ FString UMyGameInstance::GetPakRootDir()
     return FPaths::ConvertRelativePathToFull(Filename);
 }
 
-void UMyGameInstance::MoutTestSepratedPaks()
+void UMyGameInstance::MountTestSplitedPaks()
 {
     FString TargetDir = FPaths::GameDir() + "/SplitedPaks/";
     FMyFileVisitor MyFileVisitor;
