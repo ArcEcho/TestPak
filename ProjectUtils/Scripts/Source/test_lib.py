@@ -98,9 +98,13 @@ def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage
     filesToWrite = ""
     for associatedFile in assetPackage.associatedFiles:
         filesToWrite += ' "{}"'.format(associatedFile)  
+    
+    #Use hash
+    # pakFilename = str(hash(assetPackage.name))
 
-    hashStr = str(hash(assetPackage.name))
-    outputPakFilePath = os.path.join(outputPakFileDir, hashStr + ".pak")
+    _, pakFilename = os.path.split(assetPackage.name)
+    
+    outputPakFilePath = os.path.join(outputPakFileDir, pakFilename + ".pak")
     dummyPackagePath = os.path.join(targetPackagePathRootDir, "dummy.uasset")
 
     pakCmd = pakCmdTemplate.format(

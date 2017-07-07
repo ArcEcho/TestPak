@@ -27,10 +27,10 @@ public:
     void UnmountPak(const FString &PakFilename);
 
     UFUNCTION(BlueprintCallable, Category = TestPak)
-        FString GetPakRootDir();
+        void MountTestSplitedPaks();
 
     UFUNCTION(BlueprintCallable, Category = TestPak)
-        void MountTestSplitedPaks();
+        void ExecuteTestCode(const UObject *ContextObject);
 
 protected:
     void LogAndPrintToScreen(const FString &Message, const FColor &MessageColor = FColor::Purple);

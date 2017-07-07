@@ -8,10 +8,12 @@
 #include "PackageName.h"
 #include "AssetRegistryModule.h"
 #include "TestPak.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/StaticMeshComponent.h"
 
 class FMyFileVisitor : public IPlatformFile::FDirectoryVisitor
 {
-  public:
+public:
     virtual bool Visit(const TCHAR *FilenameOrDirectory, bool bIsDirectory) override
     {
         if (!bIsDirectory)
@@ -30,7 +32,7 @@ class FMyFileVisitor : public IPlatformFile::FDirectoryVisitor
     TArray<FString> Directories;
 };
 
-void UMyGameInstance::MountPak(const FString &PakFilename)
+void UMyGameInstance::MountPak(const FString &InPakFilename)
 {
     //It is not necessary to new a FPakPlatformFile object, because you can mount multiple paks
     // to one pak platform file.
@@ -42,6 +44,9 @@ void UMyGameInstance::MountPak(const FString &PakFilename)
     }
 
     FString MountPoint = FPaths::GameContentDir();
+    FPaths::MakeStandardFilename(MountPoint);
+    FString PakFilename = InPakFilename;
+    FPaths::MakeStandardFilename(PakFilename);
     if (MyPakPlatformFile->Mount(*PakFilename, 0, *MountPoint))
     {
         LogAndPrintToScreen(FString::Printf(TEXT("    Succeeded to mount %s -at-> %s"), *PakFilename, *MountPoint), FColor::Green);
@@ -94,12 +99,6 @@ void UMyGameInstance::UnmountPak(const FString &PakFilename)
     }
 }
 
-FString UMyGameInstance::GetPakRootDir()
-{
-    FString Filename = FPaths::GameDir();
-    return FPaths::ConvertRelativePathToFull(Filename);
-}
-
 void UMyGameInstance::MountTestSplitedPaks()
 {
     FString TargetDir = FPaths::GameDir() + "/SplitedPaks/";
@@ -109,6 +108,28 @@ void UMyGameInstance::MountTestSplitedPaks()
     for (auto &filename : MyFileVisitor.Files)
     {
         MountPak(filename);
+    }
+}
+
+void UMyGameInstance::ExecuteTestCode(const UObject *ContextObject)
+{
+#define USE_PAK_PRECACHE (!IS_PROGRAM && !WITH_EDITOR)
+
+#if USE_PAK_PRECACHE
+    LogAndPrintToScreen("WTF");
+#endif
+   
+   
+    auto LoadedClass = LoadClass<AActor>(nullptr, TEXT("Blueprint'/Game/BP/BP_MyActor.BP_MyActor_C'"));
+    //auto LoadedClass = LoadClass<AActor>(nullptr, TEXT("Blueprint'/Game/MyData/BP/BP_TestActor.BP_TestActor_C'"));
+    auto LoadedMesh = LoadObject<UStaticMesh>(nullptr, TEXT("StaticMesh'/Game/Meshes/SM_Test.SM_Test'"));
+
+    if (LoadedClass)
+    {
+        FVector TargetLocation(0.0f, 0.0f, 300.0f);
+        auto SpawnedActor = GEngine->GetWorldFromContextObject(ContextObject)->SpawnActor(LoadedClass, &TargetLocation);
+        auto TargetMeshComp = Cast<UStaticMeshComponent>(SpawnedActor->GetComponentsByClass(UStaticMeshComponent::StaticClass())[0]);
+        TargetMeshComp->SetStaticMesh(LoadedMesh);
     }
 }
 
