@@ -100,16 +100,15 @@ def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage
         filesToWrite += ' "{}"'.format(associatedFile)  
     
     #Use hash
-    # pakFilename = str(hash(assetPackage.name))
+    pakFilename = str(hash(assetPackage.name))
 
-    _, pakFilename = os.path.split(assetPackage.name)
+    # _, pakFilename = os.path.split(assetPackage.name)
     
     outputPakFilePath = os.path.join(outputPakFileDir, pakFilename + ".pak")
     dummyPackagePath = os.path.join(targetPackagePathRootDir, "dummy.uasset")
 
-    pakCmd = pakCmdTemplate.format(
-        urealPakToolPath, outputPakFilePath, filesToWrite, dummyPackagePath)
-    print(pakCmd)
+    pakCmd = pakCmdTemplate.format(urealPakToolPath, outputPakFilePath, filesToWrite, dummyPackagePath)
+
     subprocess.call(pakCmd, shell=True)
 
 def GeneratePakFromResponseFile():
