@@ -86,8 +86,8 @@ def GetAllAssetPackagesInCookedContent(targetCookedContentDir):
 # And when generating pak file, it will add a dummy file to the reponse file list,
 # in this way, the relative path to expected package root path will be saved in pak file.
 # For example:
-# If the input parameters targetPackagePathRootDir="F:\\AAA\\BBB\\" targetPackagePath="F:\\AAA\\BBB\\CCC\\*.*",
-# the in the output pak file, the file's save path  will start with "\\CCC\\"
+# If the input parameters targetPackagePathRootDir="F:\\AAA\\BBB\\" assetPackage="F:\\AAA\\BBB\\CCC\\*.*",
+# then in the output pak file, the file's saved path will start with "\\CCC\\"
 def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage):
     pakCmdTemplate = '"{}" "{}" {} "{}"'
     urealPakToolPath = GetUnrealPakToolPath()

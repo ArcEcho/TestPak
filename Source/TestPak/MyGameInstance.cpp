@@ -11,6 +11,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
+
+
+
+#define LOCTEXT_NAMESPACE "FHUHU"
+
 class FMyFileVisitor : public IPlatformFile::FDirectoryVisitor
 {
 public:
@@ -113,24 +120,34 @@ void UMyGameInstance::MountTestSplitedPaks()
 
 void UMyGameInstance::ExecuteTestCode(const UObject *ContextObject)
 {
-#define USE_PAK_PRECACHE (!IS_PROGRAM && !WITH_EDITOR)
+//#define USE_PAK_PRECACHE (!IS_PROGRAM && !WITH_EDITOR)
+//
+//#if USE_PAK_PRECACHE
+//    LogAndPrintToScreen("WTF");
+//#endif
+//   
+//   
+//    auto LoadedClass = LoadClass<AActor>(nullptr, TEXT("Blueprint'/Game/BP/BP_MyActor.BP_MyActor_C'"));
+//    //auto LoadedClass = LoadClass<AActor>(nullptr, TEXT("Blueprint'/Game/MyData/BP/BP_TestActor.BP_TestActor_C'"));
+//    auto LoadedMesh = LoadObject<UStaticMesh>(nullptr, TEXT("StaticMesh'/Game/Meshes/SM_Test.SM_Test'"));
+//
+//    if (LoadedClass)
+//    {
+//        FVector TargetLocation(0.0f, 0.0f, 300.0f);
+//        auto SpawnedActor = GEngine->GetWorldFromContextObject(ContextObject)->SpawnActor(LoadedClass, &TargetLocation);
+//        auto TargetMeshComp = Cast<UStaticMeshComponent>(SpawnedActor->GetComponentsByClass(UStaticMeshComponent::StaticClass())[0]);
+//        TargetMeshComp->SetStaticMesh(LoadedMesh);
+//    }
 
-#if USE_PAK_PRECACHE
-    LogAndPrintToScreen("WTF");
-#endif
-   
-   
-    auto LoadedClass = LoadClass<AActor>(nullptr, TEXT("Blueprint'/Game/BP/BP_MyActor.BP_MyActor_C'"));
-    //auto LoadedClass = LoadClass<AActor>(nullptr, TEXT("Blueprint'/Game/MyData/BP/BP_TestActor.BP_TestActor_C'"));
-    auto LoadedMesh = LoadObject<UStaticMesh>(nullptr, TEXT("StaticMesh'/Game/Meshes/SM_Test.SM_Test'"));
 
-    if (LoadedClass)
-    {
-        FVector TargetLocation(0.0f, 0.0f, 300.0f);
-        auto SpawnedActor = GEngine->GetWorldFromContextObject(ContextObject)->SpawnActor(LoadedClass, &TargetLocation);
-        auto TargetMeshComp = Cast<UStaticMeshComponent>(SpawnedActor->GetComponentsByClass(UStaticMeshComponent::StaticClass())[0]);
-        TargetMeshComp->SetStaticMesh(LoadedMesh);
-    }
+
+    auto Message = LOCTEXT("HEHEHE", "HOHOHO");
+    FNotificationInfo Info(Message);
+    Info.bFireAndForget = true;
+    Info.ExpireDuration = 5.0f;
+    Info.bUseSuccessFailIcons = false;
+    Info.bUseLargeFont = false;
+    FSlateNotificationManager::Get().AddNotification(Info);
 }
 
 void UMyGameInstance::LogAndPrintToScreen(const FString &Message, const FColor &MessageColor /*= FColor::Purple*/)

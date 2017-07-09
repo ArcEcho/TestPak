@@ -14,6 +14,9 @@
 #include "FileHelper.h"
 #include "json.h"
 
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
+
 #include "ExportAssetDependeciesSettings.h"
 
 #include "LevelEditor.h"
@@ -116,10 +119,10 @@ void FExportAssetDependeciesModule::ExportAssetDependecies()
         return;
     }
 
-    auto OutputFilename = FPaths::Combine(CurrentSettings->OutputPath.Path, TEXT("AssetDependencies.json"));
-    if (!FPaths::ValidatePath(OutputFilename))
+    auto ResultFileOutputPath = CurrentSettings->OutputPath.Path;
+    if (!FPaths::ValidatePath(ResultFileOutputPath))
     {
-        UE_LOG(LogExportAssetDependecies, Error, TEXT("Invalid output path."));
+        UE_LOG(LogExportAssetDependecies, Error, TEXT("Invalid output path£º %s"), *ResultFileOutputPath);
         return;
     }
 
@@ -131,7 +134,7 @@ void FExportAssetDependeciesModule::ExportAssetDependecies()
     GatherDependenciesInfo(CurrentSettings, Results);
 
     //Write Results
-    SaveDependicesInfo(OutputFilename, Results);
+    SaveDependicesInfo(ResultFileOutputPath, Results);
 }
 
 
@@ -207,7 +210,7 @@ void FExportAssetDependeciesModule::GatherDependenciesInfo(const UExportAssetDep
 }
 
 
-void FExportAssetDependeciesModule::SaveDependicesInfo(const FString &OutputFilename, const TMap<FString, TArray<FString>> &Results)
+void FExportAssetDependeciesModule::SaveDependicesInfo(const FString &ResultFileOutputPath, const TMap<FString, TArray<FString>> &Results)
 {
     //Construct JSON object.
     TSharedPtr<FJsonObject> RootJsonObject = MakeShareable(new FJsonObject);
@@ -225,14 +228,32 @@ void FExportAssetDependeciesModule::SaveDependicesInfo(const FString &OutputFile
     FString OutputString;
     auto JsonWirter = TJsonWriterFactory<>::Create(&OutputString);
     FJsonSerializer::Serialize(RootJsonObject.ToSharedRef(), JsonWirter);
-    bool bSaveSuccess = FFileHelper::SaveStringToFile(OutputString, *OutputFilename);
+
+    FString ResultFileFilename = FPaths::Combine(ResultFileOutputPath, TEXT("AssetDependencies.json"));
+    bool bSaveSuccess = FFileHelper::SaveStringToFile(OutputString, *ResultFileFilename);
     if (bSaveSuccess)
     {
-        UE_LOG(LogExportAssetDependecies, Log, TEXT("Succeed to export %s"), *OutputFilename);
+        auto Message = LOCTEXT("ExportAssetDependeciesSuccessNotification", "Succeed to export asset dependecies.");
+        FNotificationInfo Info(Message);
+        Info.bFireAndForget = true;
+        Info.ExpireDuration = 5.0f;
+        Info.bUseSuccessFailIcons = false;
+        Info.bUseLargeFont = false;
+
+        const FString HyperLinkText = ResultFileFilename;
+        Info.Hyperlink = FSimpleDelegate::CreateStatic([](FString SourceFilePath)
+        {
+            FPlatformProcess::ExploreFolder(*(FPaths::GetPath(SourceFilePath)));
+        }, HyperLinkText);
+        Info.HyperlinkText = FText::FromString(HyperLinkText);
+
+        FSlateNotificationManager::Get().AddNotification(Info);
+
+        UE_LOG(LogExportAssetDependecies, Log, TEXT("%s. At %s"), *Message.ToString(), *ResultFileFilename);
     }
     else
     {
-        UE_LOG(LogExportAssetDependecies, Error, TEXT("Failed to export %s"), *OutputFilename);
+        UE_LOG(LogExportAssetDependecies, Error, TEXT("Failed to export %s"), *ResultFileFilename);
     }
 }
 

@@ -32,7 +32,7 @@ private:
     void GatherDependenciesInfo(const UExportAssetDependeciesSettings * CurrentSettings, TMap<FString, TArray<FString>> &Results);
     
     /** This will save the dependencies information to the OutputPath/AssetDependencies.json */
-    void SaveDependicesInfo(const FString &OutputFilename, const TMap<FString, TArray<FString>> &Results);
+    void SaveDependicesInfo(const FString &ResultFileOutputPath, const TMap<FString, TArray<FString>> &Results);
 
 private:
     TSharedPtr<class FUICommandList> PluginCommands;
