@@ -8,7 +8,6 @@ import re
 
 import hashlib
 
-
 def GetEngineRootDir():
     myConfigParser = configparser.ConfigParser()
     myConfigParser.read("PakTestConfig.ini")
@@ -94,7 +93,8 @@ def GetSha1OfLongPackageName(packageName):
 # in this way, the relative path to expected package root path will be saved in pak file.
 # For example:
 # If the input parameters targetPackagePathRootDir="F:\\AAA\\BBB\\" targetPackagePath="F:\\AAA\\BBB\\CCC\\*.*",
-# the in the output pak file, the file's save path  will start with "\\CCC\\"
+# then in the output pak file, the file's save path  will start with "\\CCC\\"
+
 def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage, logFileHandle = None):
     pakCmdTemplate = '"{}" "{}" {} "{}"'
     urealPakToolPath = GetUnrealPakToolPath()
