@@ -49,8 +49,9 @@ def DetectUnrealEngineRootDir(inExpectedVersion):
 
 
 class AssetPackage:
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, longName, packagePath):
+        self.longName = longName
+        self.packagePath = packagePath
         self.associatedFiles = set([])
 
     def AddAssociatedFile(self, filepath):
@@ -58,34 +59,43 @@ class AssetPackage:
 
 
 def GetAllAssetPackagesInCookedContent(targetCookedContentDir):
+    targetCookedContentDir = os.path.normpath(targetCookedContentDir)
     tempMap = {}
     for root, dirs, files in os.walk(targetCookedContentDir):
         for filename in files:
+            if filename == "pack_data.dat":
+                continue
+
             filepath = os.path.join(root, filename)
 
             filepathWithoutExt, ext = os.path.splitext(filepath)
             fileDir, assetPackageName = os.path.split(filepathWithoutExt)
 
-            m = re.match(r'(.*)_BuiltData', assetPackageName)
-            if m:
-                assetPackageAlias = os.path.join(fileDir , m.group(1))
-            else:
-                assetPackageAlias = filepathWithoutExt
+            # m = re.match(r'(.*)_BuiltData', assetPackageName)
+            # if m:
+            #     assetPackageAlias = os.path.join(fileDir , m.group(1))
+            # else:
+            #     assetPackageAlias = filepathWithoutExt
+            packagePath = filepathWithoutExt   
 
-            if tempMap.__contains__(assetPackageAlias):
-                tempMap[assetPackageAlias].AddAssociatedFile(filepath)
+            longPackageName = packagePath.replace(targetCookedContentDir, "/Game")
+            longPackageName = longPackageName.replace('\\', '/')
+
+            print(longPackageName, packagePath, targetCookedContentDir)
+            if tempMap.__contains__(packagePath):
+                tempMap[packagePath].AddAssociatedFile(filepath)
             else:
-                tempMap[assetPackageAlias] = AssetPackage(assetPackageAlias)
-                tempMap[assetPackageAlias].AddAssociatedFile(filepath)
+                tempMap[packagePath] = AssetPackage(longPackageName, packagePath)
+                tempMap[packagePath].AddAssociatedFile(filepath)
     results = []
 
     for key in tempMap:
         results.append(tempMap[key])
     return results
 
-def GetSha1OfLongPackageName(packageName):
+def GetSha1OfLongPackageName(longPackageName):
     sha1Obj = hashlib.sha1()
-    sha1Obj.update(str.encode(packageName))
+    sha1Obj.update(str.encode(longPackageName))
     return sha1Obj.hexdigest()
     
 # This function accepts a short package filepath with out extension.
@@ -95,8 +105,8 @@ def GetSha1OfLongPackageName(packageName):
 # If the input parameters targetPackagePathRootDir="F:\\AAA\\BBB\\" targetPackagePath="F:\\AAA\\BBB\\CCC\\*.*",
 # then in the output pak file, the file's save path  will start with "\\CCC\\"
 
-def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage, logFileHandle = None):
-    pakCmdTemplate = '"{}" "{}" {} "{}"'
+def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage,  inShouldPackTo64KB = False):
+    pakCmdTemplate = '"{}" "{}" {} "{}" {}'
     urealPakToolPath = GetUnrealPakToolPath()
 
     outputPakFileDir = os.path.normpath(outputPakFileDir)
@@ -106,19 +116,21 @@ def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage
     for associatedFile in assetPackage.associatedFiles:
         filesToWrite += ' "{}"'.format(associatedFile)  
 
-    
     #Use hash
-    pakFilename = GetSha1OfLongPackageName(assetPackage.name) 
+    pakFilename = GetSha1OfLongPackageName(assetPackage.longName) 
     outputPakFilePath = os.path.join(outputPakFileDir, pakFilename + ".pak")
-
-    if logFileHandle:
-        logFileHandle.write(assetPackage.name + " --> " + outputPakFilePath + '\n' )
-
     dummyPackagePath = os.path.join(targetPackagePathRootDir, "dummy.uasset")
+    
+    if inShouldPackTo64KB:
+        packDataFilepath = '"{}"'.format(os.path.join(targetPackagePathRootDir, "pack_data.dat"))
+    else:
+        packDataFilepath = ''
+        
+    pakCmd = pakCmdTemplate.format(urealPakToolPath, outputPakFilePath, filesToWrite, dummyPackagePath, packDataFilepath)
 
-    pakCmd = pakCmdTemplate.format(urealPakToolPath, outputPakFilePath, filesToWrite, dummyPackagePath)
+    subprocess.check_call(pakCmd, shell=True)
 
-    subprocess.call(pakCmd, shell=True)
+    return outputPakFilePath
 
 def GeneratePakFromResponseFile():
     # todo

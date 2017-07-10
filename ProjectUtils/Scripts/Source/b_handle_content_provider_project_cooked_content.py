@@ -27,7 +27,16 @@ if __name__ == "__main__":
     generatePakLogFilepath = os.path.abspath(os.path.join(test_lib.GetCurrentProjectRootDir(), "Saved\\ProjectUtils\\GeneratePaks.log"))
     logFileHandle = open(generatePakLogFilepath, 'w')
     for assetPackage in assetPackages:
-        test_lib.GenerateSplitedPaks(splitedPaksTempDir, contentProviderProjectCookedContentDir, assetPackage, logFileHandle)
+        outputPakFilePath = test_lib.GenerateSplitedPaks(splitedPaksTempDir, contentProviderProjectCookedContentDir, assetPackage)
+        
+        # If the pak file size is less than 64KB, when pack and regenerate pak file to meet the PAK_PRECAHCE_GRUNULARITY. 
+        if os.path.getsize(outputPakFilePath) < 64 * 1024:
+            os.remove(outputPakFilePath)
+            outputPakFilePath = test_lib.GenerateSplitedPaks(splitedPaksTempDir, contentProviderProjectCookedContentDir, assetPackage,  inShouldPackTo64KB = True)
+            logFileHandle.write(assetPackage.longName + " --> " + outputPakFilePath + " packed \n" )        
+        else:
+            logFileHandle.write(assetPackage.longName + " --> " + outputPakFilePath + " unpacked \n" )
+       
     logFileHandle.close()
     
 
