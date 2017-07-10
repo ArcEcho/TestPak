@@ -23,9 +23,12 @@ if __name__ == "__main__":
         shutil.rmtree(splitedPaksTempDirPendingDelete)
     
     assetPackages = test_lib.GetAllAssetPackagesInCookedContent(contentProviderProjectCookedContentDir)
+
+    generatePakLogFilepath = os.path.abspath(os.path.join(test_lib.GetCurrentProjectRootDir(), "Saved\\ProjectUtils\\GeneratePaks.log"))
+    logFileHandle = open(generatePakLogFilepath, 'w')
     for assetPackage in assetPackages:
-        test_lib.GenerateSplitedPaks(splitedPaksTempDir, contentProviderProjectCookedContentDir, assetPackage)
-    
+        test_lib.GenerateSplitedPaks(splitedPaksTempDir, contentProviderProjectCookedContentDir, assetPackage, logFileHandle)
+    logFileHandle.close()
     
 
 

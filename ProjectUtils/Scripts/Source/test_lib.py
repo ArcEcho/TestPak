@@ -6,6 +6,8 @@ import os
 import shutil
 import re
 
+import hashlib
+
 
 def GetEngineRootDir():
     myConfigParser = configparser.ConfigParser()
@@ -82,13 +84,18 @@ def GetAllAssetPackagesInCookedContent(targetCookedContentDir):
         results.append(tempMap[key])
     return results
 
+def GetSha1OfLongPackageName(packageName):
+    sha1Obj = hashlib.sha1()
+    sha1Obj.update(str.encode(packageName))
+    return sha1Obj.hexdigest()
+    
 # This function accepts a short package filepath with out extension.
 # And when generating pak file, it will add a dummy file to the reponse file list,
 # in this way, the relative path to expected package root path will be saved in pak file.
 # For example:
 # If the input parameters targetPackagePathRootDir="F:\\AAA\\BBB\\" targetPackagePath="F:\\AAA\\BBB\\CCC\\*.*",
 # the in the output pak file, the file's save path  will start with "\\CCC\\"
-def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage):
+def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage, logFileHandle = None):
     pakCmdTemplate = '"{}" "{}" {} "{}"'
     urealPakToolPath = GetUnrealPakToolPath()
 
@@ -98,13 +105,15 @@ def GenerateSplitedPaks(outputPakFileDir, targetPackagePathRootDir, assetPackage
     filesToWrite = ""
     for associatedFile in assetPackage.associatedFiles:
         filesToWrite += ' "{}"'.format(associatedFile)  
+
     
     #Use hash
-    pakFilename = str(hash(assetPackage.name))
-
-    # _, pakFilename = os.path.split(assetPackage.name)
-    
+    pakFilename = GetSha1OfLongPackageName(assetPackage.name) 
     outputPakFilePath = os.path.join(outputPakFileDir, pakFilename + ".pak")
+
+    if logFileHandle:
+        logFileHandle.write(assetPackage.name + " --> " + outputPakFilePath + '\n' )
+
     dummyPackagePath = os.path.join(targetPackagePathRootDir, "dummy.uasset")
 
     pakCmd = pakCmdTemplate.format(urealPakToolPath, outputPakFilePath, filesToWrite, dummyPackagePath)
