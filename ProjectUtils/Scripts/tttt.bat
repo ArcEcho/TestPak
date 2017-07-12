@@ -1,0 +1,2 @@
+@echo off
+python Source\temp_copy_out_dependices_cooked_file.py

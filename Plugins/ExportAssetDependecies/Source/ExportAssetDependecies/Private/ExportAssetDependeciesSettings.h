@@ -13,19 +13,9 @@ class EXPORTASSETDEPENDECIES_API UExportAssetDependeciesSettings : public UObjec
     GENERATED_UCLASS_BODY()
 
 public:
-    /** Choose directories in which you want export the asset's dependencies.*/
-    UPROPERTY(EditAnywhere, config, Category = Default, meta = (DisplayName = "List of directories to search the exported assets.", ContentDir, LongPackageName, NoElementDuplicate))
-        TArray<FDirectoryPath> ExportDirectories;
-   
-    /** Determine if scan assets recursively.*/
-    UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Default)
-        bool bShouldExportRecursively;
-
-    /** Determine whether to export dependencies only in content dir.*/
-    UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Default)
-        bool bOnlyExportWhatInGameConent;
-
-
     UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Default)
         FDirectoryPath OutputPath;
+
+    UPROPERTY(config, EditAnywhere, BlueprintReadWrite, Category = Default)
+        FFilePath TargetLongPackageName;
 };

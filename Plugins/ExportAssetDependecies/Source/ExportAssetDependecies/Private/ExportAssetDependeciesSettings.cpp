@@ -9,8 +9,7 @@
 UExportAssetDependeciesSettings::UExportAssetDependeciesSettings(const FObjectInitializer& Initializer)
     : Super(Initializer)
 {
-    bShouldExportRecursively = false;
-    bOnlyExportWhatInGameConent = true;
+
 }
 
 #undef LOCTEXT_NAMESPACE
