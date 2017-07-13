@@ -50,58 +50,70 @@ if __name__ == "__main__":
     if os.path.exists(tempDir):
         os.rename(tempDir, tempDirPendingDelete)
         shutil.rmtree(tempDirPendingDelete)
-
-    os.mkdir(tempDir)
+    
+    # Create project util saved dir.
+    projectUtilsDir = os.path.join(test_lib.GetContentProviderProjectRootDir(), "Saved\\ProjectUtils\\")
+    if not os.path.exists(projectUtilsDir):
+        os.makedirs(projectUtilsDir)
+    else:
+        os.mkdir(tempDir)
 
     generatePakLogFilepath = os.path.abspath(os.path.join(test_lib.GetContentProviderProjectRootDir(), "Saved\\ProjectUtils\\GeneratePaks.log"))
     assetDependenciesFileFilpath =   os.path.abspath(os.path.join(test_lib.GetContentProviderProjectRootDir(), "Saved\\ExportAssetDependecies\\AssetDependencies.json"))
 
-    projectUtilsDir = os.path.join(test_lib.GetContentProviderProjectRootDir(), "Saved\\ProjectUtils\\")
     if not os.path.exists(projectUtilsDir):
         os.mkdir(projectUtilsDir) 
 
-    with open(assetDependenciesFileFilpath, 'r') as f:
-        data = json.load(f)
-        for (k,v) in  data.items():
-            #Now just handle dependencies in game content dir.
-            packagesToHandle = v['DependenciesInGameContentDir']
-            packagesToHandle.append(k)
+    with open(generatePakLogFilepath, 'w') as generatePakLogFileHandle:
+        with open(assetDependenciesFileFilpath, 'r') as assetDependenciesFileHandle:
+            data = json.load(assetDependenciesFileHandle)
+            for (targetPackage,dependentData) in  data.items():
+                sha1OfLongTargetPackageName = test_lib.GetSha1OfLongPackageName(targetPackage)
 
-            sha1OfLongPackageName = test_lib.GetSha1OfLongPackageName(k)
-            targetOutputDir = os.path.join(tempDir, sha1OfLongPackageName)
-            os.mkdir(targetOutputDir)
+                # Now just handle dependencies in game content dir.
+                packagesToHandle = dependentData['DependenciesInGameContentDir']
+                packagesToHandle.append(targetPackage)
 
-            jsonObject = {}
-            jsonObject["long_package_name"] = k
-            jsonObject["type"] = "level"
-            jsonObject["dependent_pak_file_list"] = []
-            for longPackageName in packagesToHandle:
-                outputPakFilePath = GeneratePak(targetOutputDir, contentProviderProjectCookedContentDir, longPackageName)
-                # If the pak file size is less than 64KB, when pack and regenerate pak file to meet the PAK_PRECAHCE_GRUNULARITY. 
-                if os.path.getsize(outputPakFilePath) < 64 * 1024:
-                    os.remove(outputPakFilePath)
-                    outputPakFilePath = GeneratePak(targetOutputDir, contentProviderProjectCookedContentDir, longPackageName,  inShouldPackTo64KB = True)
-                    isPacked = True       
-                else:
-                    isPacked = False
-                _, outputFilename = os.path.split(outputPakFilePath) 
+                # Make output dir with sha1 value 
+                targetOutputDir = os.path.join(tempDir, sha1OfLongTargetPackageName)
+                os.mkdir(targetOutputDir)
 
-                if longPackageName != k:
-                    entry = {}
-                    entry["file_name"] = outputFilename
-                    entry["file_size"] = os.path.getsize(outputPakFilePath)
-                    entry["long_package_name"] = longPackageName
-                    entry["is_packed_to_64KB"] = isPacked
-                    jsonObject["dependent_pak_file_list"].append(entry)
-                else:
-                    filename = longPackageName.replace('/Game', "" )
-                    filename = os.path.normpath(contentProviderProjectCookedContentDir + filename)
-                    jsonObject["file_size"] = os.path.getsize(outputPakFilePath)
-                    jsonObject["pak_file"] = outputFilename
-                    jsonObject["is_packed_to_64KB"] = isPacked
-                    jsonObject["is_level"] = os.path.exists(filename + ".umap")
+                # Fill json object and generate pak.
+                jsonObject = {}
+                jsonObject["long_package_name"] = targetPackage
+                jsonObject["dependent_pak_file_list"] = []
+                for longPackageName in packagesToHandle:
+                    outputPakFilePath = GeneratePak(targetOutputDir, contentProviderProjectCookedContentDir, longPackageName)
+                    # If the pak file size is less than 64KB, when pack and regenerate pak file to meet the PAK_PRECAHCE_GRUNULARITY. 
+                    if os.path.getsize(outputPakFilePath) < 64 * 1024:
+                        os.remove(outputPakFilePath)
+                        outputPakFilePath = GeneratePak(targetOutputDir, contentProviderProjectCookedContentDir, longPackageName,  inShouldPackTo64KB = True)
+                        isPacked = True       
+                    else:
+                        isPacked = False
+                    _, outputFilename = os.path.split(outputPakFilePath) 
 
-                outputInfoFilepath = os.path.join(targetOutputDir, 'info.json')
+                    if longPackageName != targetPackage:
+                        # Self 
+                        entry = {}
+                        entry["file_name"] = outputFilename
+                        entry["file_size"] = os.path.getsize(outputPakFilePath)
+                        entry["long_package_name"] = longPackageName
+                        entry["is_packed_to_64KB"] = isPacked
+                        jsonObject["dependent_pak_file_list"].append(entry)
+                    else:
+                        # Dependencies
+                        filename = longPackageName.replace('/Game', "" )
+                        filename = os.path.normpath(contentProviderProjectCookedContentDir + filename)
+                        jsonObject["file_size"] = os.path.getsize(outputPakFilePath)
+                        jsonObject["pak_file"] = outputFilename
+                        jsonObject["is_packed_to_64KB"] = isPacked
+                        jsonObject["is_level"] = os.path.exists(filename + ".umap")
+
+                        # Write json object to info file.
+                        generatePakLogFileHandle.write('"{}" --> "{}"\n'.format(longPackageName, sha1OfLongTargetPackageName ))
+
+                outputInfoFilepath = os.path.join(targetOutputDir, '{}.json'.format(sha1OfLongTargetPackageName))
                 with open(outputInfoFilepath, 'w') as outputInfoFileHandle:
                     outputInfoFileHandle.write(json.dumps(jsonObject, indent=4))
-                
+                    
