@@ -55,8 +55,8 @@ if __name__ == "__main__":
     projectUtilsDir = os.path.join(test_lib.GetContentProviderProjectRootDir(), "Saved\\ProjectUtils\\")
     if not os.path.exists(projectUtilsDir):
         os.makedirs(projectUtilsDir)
-    else:
-        os.mkdir(tempDir)
+
+    os.mkdir(tempDir)
 
     generatePakLogFilepath = os.path.abspath(os.path.join(test_lib.GetContentProviderProjectRootDir(), "Saved\\ProjectUtils\\GeneratePaks.log"))
     assetDependenciesFileFilpath =   os.path.abspath(os.path.join(test_lib.GetContentProviderProjectRootDir(), "Saved\\ExportAssetDependecies\\AssetDependencies.json"))
