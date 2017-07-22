@@ -25,4 +25,4 @@ Pak working flow
 1.Add a plugin to export asset dependencies.
 
 ### Bug
-+ I do not why UE4.15.3 just produces uasset file. This will cause unexpected banding effects if you use static ligting.
++ I do not know why UE4.15.3 just produces uasset file. This will cause unexpected banding effects if you use static ligting.
