@@ -118,6 +118,7 @@ struct FDependicesInfo
 {
     TArray<FString> DependicesInGameContentDir;
     TArray<FString> OtherDependices;
+    FString AssetClassString;
 };
 
 void FExportAssetDependeciesModule::ExportAssetDependecies()
@@ -160,9 +161,28 @@ void FExportAssetDependeciesModule::ExportAssetDependecies()
         FStringAssetReference AssetRef = PackageFilePath.FilePath;
         FString TargetLongPackageName = AssetRef.GetLongPackageName();
 
+
         if (FPackageName::DoesPackageExist(TargetLongPackageName))
         {
             auto &DependicesInfoEntry = DependicesInfos.Add(TargetLongPackageName);
+
+            // Try get asset type.
+            {
+                TArray<FAssetData> AssetDataList;
+                bool  bResult = AssetRegistryModule.Get().GetAssetsByPackageName(FName(*TargetLongPackageName), AssetDataList);
+                if (!bResult || AssetDataList.Num() == 0)
+                {
+                    UE_LOG(LogExportAssetDependecies, Error, TEXT("Failed to get AssetData of  %s, please check."), *TargetLongPackageName);
+                    return;
+                }
+
+                if (AssetDataList.Num() > 1)
+                {
+                    UE_LOG(LogExportAssetDependecies, Error, TEXT("Got multiple AssetData of  %s, please check."), *TargetLongPackageName);
+                }
+
+                DependicesInfoEntry.AssetClassString = AssetDataList[0].AssetClass.ToString();
+            }
 
             GatherDependenciesInfoRecursively(AssetRegistryModule, TargetLongPackageName, DependicesInfoEntry.DependicesInGameContentDir, DependicesInfoEntry.OtherDependices);
         }
@@ -180,7 +200,7 @@ void FExportAssetDependeciesModule::GatherDependenciesInfoRecursively(FAssetRegi
     TArray<FString> &DependicesInGameContentDir,
     TArray<FString> &OtherDependices)
 {
-  TArray<FName> Dependencies;
+    TArray<FName> Dependencies;
     bool bGetDependenciesSuccess = AssetRegistryModule.Get().GetDependencies(FName(*TargetLongPackageName), Dependencies, EAssetRegistryDependencyType::Packages);
     if (bGetDependenciesSuccess)
     {
@@ -214,8 +234,12 @@ void FExportAssetDependeciesModule::SaveDependicesInfo(const TMap<FString, FDepe
     TSharedPtr<FJsonObject> RootJsonObject = MakeShareable(new FJsonObject);
     for (auto &DependicesInfoEntry : DependicesInfos)
     {
-        // Write dependencies in game content dir.
         TSharedPtr<FJsonObject> EntryJsonObject = MakeShareable(new FJsonObject);
+
+        // Write current AssetClass.
+        EntryJsonObject->SetStringField("AssetClass", DependicesInfoEntry.Value.AssetClassString);
+
+        // Write dependencies in game content dir.
         {
             TArray< TSharedPtr<FJsonValue> > DependenciesEntry;
             for (auto &d : DependicesInfoEntry.Value.DependicesInGameContentDir)
@@ -242,8 +266,8 @@ void FExportAssetDependeciesModule::SaveDependicesInfo(const TMap<FString, FDepe
     auto JsonWirter = TJsonWriterFactory<>::Create(&OutputString);
     FJsonSerializer::Serialize(RootJsonObject.ToSharedRef(), JsonWirter);
 
-    FString ResultFileFilename = FPaths::Combine(FPaths::GameSavedDir(), TEXT("ExportAssetDependecies/AssetDependencies.json"));
-    ResultFileFilename = FPaths::ConvertRelativePathToFull(FPaths::GetPath(ResultFileFilename));
+    FString ResultFileFilename = FPaths::Combine(FPaths::GameSavedDir(), TEXT("ExportAssetDependecies"), TEXT("/AssetDependencies.json"));
+    ResultFileFilename = FPaths::ConvertRelativePathToFull(ResultFileFilename);
 
     // Attention to FFileHelper::EEncodingOptions::ForceUTF8 here. 
     // In some case, UE4 will save as UTF16 according to the content.

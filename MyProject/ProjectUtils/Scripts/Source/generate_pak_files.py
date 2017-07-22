@@ -207,7 +207,7 @@ if __name__ == "__main__":
                             jsonObject["file_size"] = os.path.getsize(outputPakFilePath)
                             jsonObject["pak_file"] = outputFilename
                             jsonObject["is_packed_to_64KB"] = isPacked
-                            jsonObject["is_level"] = os.path.exists(filename + ".umap")
+                            jsonObject["asset_class"] = dependentData["AssetClass"]
 
                             # Write json object to info file.
                             generatePakLogFileHandle.write('"{}" --> "{}"\n'.format(longPackageName, sha1OfLongTargetPackageName ))
@@ -229,7 +229,7 @@ if __name__ == "__main__":
                     jsonObject["file_size"] = os.path.getsize(outputPakFilePath)
                     jsonObject["pak_file"] = outputFilename
                     jsonObject["is_packed_to_64KB"] = isPacked
-                    jsonObject["is_level"] = os.path.exists(filename + ".umap")
+                    jsonObject["asset_class"] = dependentData["AssetClass"]
 
                     # Write json object to info file.
                     generatePakLogFileHandle.write('"{}" --> "{}"\n'.format(targetPackage, sha1OfLongTargetPackageName ))
