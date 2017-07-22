@@ -69,3 +69,6 @@
 **/Saved/*
 **/Build/*
 **/Binaries/*
+
+**/.vscode/*
+**/__pycache__/*
