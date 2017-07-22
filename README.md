@@ -6,18 +6,23 @@ UE4 Pak Test
 + provding some brief code to show how to mount pak files and the load resource from it.
 
 ### test what
-I just made all the assets in another project. And use two way to generate pak files. One way is to package them as a whole, and the other way is to package them into two pak files. Mount them and try to open the level in the pak files.
+Pak working flow
 
 ### Requires
 + UE4 4.16.2: Code is simple and this version is not prerequisite.
 + Python 3.x: The scripts in ProjectUtils are written with python 3.x.
 
 ### Steps
-+ Run deploy bat to create pak response files, these files contain what be packaged into pak files.This step is to discover and write absolute path into corresponding files. 
-+ Run pak bat to package files.
-+ (Optional) Yon can run pak_extract bat to see what was packaged and how they ary organized.
-+ Packaging TestPak project, and copy all the files from ./paks to your packaging destination ./dest/TestPak/MyPaks
-+ Run game and test. 
 
-### aditional
++ Use the ExportAssetDependenciesPlugin to export dependecies infomation of what you want to collect into pak files.
++ Cook all content.
++ Setup the config in ProjectUtils.
++ Use generate bat tool in ProjectUtils to produce pak files. Pay attention to the command line, especially the response files' content.
++ Exclude the assets you have exported above and package your project.
++ Run game and input the root dir's TestPaks path and open MyTestLevel to see the result. 
+
+### Adition
 1.Add a plugin to export asset dependencies.
+
+### Bug
++ I do not why UE4.15.3 just produces uasset file. This will cause unexpected banding effects if you use static ligting.

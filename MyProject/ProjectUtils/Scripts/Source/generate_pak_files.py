@@ -40,9 +40,8 @@ def GetSha1OfLongPackageName(longPackageName):
     return sha1Obj.hexdigest()
 
 def GeneratePak(outputPakFileDir, targetPackagePathRootDir, longPackageName, inShouldPackTo64KB = False):
-    pakCmdTemplate = '"{}" "{}" -create="{}" -encryptionini -platform=Windows -installed -UTF8Output -multiprocess -patchpaddingalign=2048 -abslog="{}"'
+    pakCmdTemplate = '"{}" "{}" -create="{}" -encryptionini -platform=Windows -installed -UTF8Output -multiprocess -patchpaddingalign=2048 -abslog="{}" -projectdir={} -enginedir={}'
     urealPakToolPath = GetUnrealPakToolPath()
-
     outputPakFileDir = os.path.normpath(outputPakFileDir)
     targetPackagePathRootDir = os.path.normpath(targetPackagePathRootDir)
     outputPakFilename = GetSha1OfLongPackageName(longPackageName)
@@ -83,7 +82,10 @@ def GeneratePak(outputPakFileDir, targetPackagePathRootDir, longPackageName, inS
       
     outputPakFilePath = os.path.join(outputPakFileDir, outputPakFilename + ".pak")
 
-    pakCmd = pakCmdTemplate.format(urealPakToolPath, outputPakFilePath, pakReponseFilepath, absPakLogFilepath)
+    projectDir = GetTargetPorjectRootDir()
+    engineDir = GetEngineRootDir()
+
+    pakCmd = pakCmdTemplate.format(urealPakToolPath, outputPakFilePath, pakReponseFilepath, absPakLogFilepath, projectDir, engineDir)
 
     subprocess.check_call(pakCmd, shell=True)
 

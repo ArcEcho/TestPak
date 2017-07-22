@@ -34,7 +34,7 @@ private:
         TArray<FString> &DependicesInGameContentDir, TArray<FString> &OtherDependices);
 
     /** This will save the dependencies information to the OutputPath/AssetDependencies.json */
-    void SaveDependicesInfo(const FString &ResultFileOutputPath,const TMap<FString, FDependicesInfo> &DependicesInfos);
+    void SaveDependicesInfo(const TMap<FString, FDependicesInfo> &DependicesInfos);
 
 private:
     TSharedPtr<class FUICommandList> PluginCommands;

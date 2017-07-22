@@ -63,7 +63,7 @@ void FExportAssetDependeciesModule::StartupModule()
         LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
     }
 
-    //Initialize setting, take care of this registry syntax
+    // Initialize setting, take care of this registry syntax
     {
         ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
         if (SettingsModule != nullptr)
@@ -89,10 +89,10 @@ void FExportAssetDependeciesModule::ShutdownModule()
 
 void FExportAssetDependeciesModule::PluginButtonClicked()
 {
-    //TODO ArcEcho
-    //Should check whether the game content is dirty.
+    // TODO ArcEcho
+    // Should check whether the game content is dirty.
 
-    //If loading assets
+    // If loading assets
     FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
     if (AssetRegistryModule.Get().IsLoadingAssets())
     {
@@ -122,7 +122,7 @@ struct FDependicesInfo
 
 void FExportAssetDependeciesModule::ExportAssetDependecies()
 {
-    //Validate settings
+    // Validate settings
     auto CurrentSettings = GetMutableDefault<UExportAssetDependeciesSettings>();
     if (!CurrentSettings)
     {
@@ -130,18 +130,18 @@ void FExportAssetDependeciesModule::ExportAssetDependecies()
         return;
     }
 
-    //TODO ArcEcho
-    //1.Check input paths validation
-    //2.Check it has valid package path.
+    // TODO ArcEcho
+    // 1.Check input paths validation
+    // 2.Check it has valid package path.
     if (CurrentSettings->PackagesToExport.Num() == 0)
     {
         ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
         if (SettingsModule != nullptr)
         {
-            //If there is no PackagesToExport set, just to the setting viewer.
+            // If there is no PackagesToExport set, just to the setting viewer.
             SettingsModule->ShowViewer("Project", "Game", "ExportAssetDependencies");
 
-            //UE4 API to show an editor notification.
+            // UE4 API to show an editor notification.
             auto Message = LOCTEXT("ExportAssetDependeciesNoValidTargetPackages", "No valid target packages set.");
             FNotificationInfo Info(Message);
             Info.bUseSuccessFailIcons = true;
@@ -171,9 +171,8 @@ void FExportAssetDependeciesModule::ExportAssetDependecies()
         AssetRegistryModule.Get().GetAncestorClassNames(*TargetLongPackageName, ACs);
     }
 
-    //Write Results
-    auto ResultFileOutputPath = FPaths::Combine(FPaths::GameSavedDir(), "ExportAssetDependecies");
-    SaveDependicesInfo(ResultFileOutputPath, DependicesInfos);
+    // Write Results
+    SaveDependicesInfo(DependicesInfos);
 }
 
 void FExportAssetDependeciesModule::GatherDependenciesInfoRecursively(FAssetRegistryModule &AssetRegistryModule,
@@ -187,11 +186,11 @@ void FExportAssetDependeciesModule::GatherDependenciesInfoRecursively(FAssetRegi
     {
         for (auto &d : Dependencies)
         {
-            //Pick out packages in game content dir.
+            // Pick out packages in game content dir.
             FString LongDependentPackageName = d.ToString();
             if (LongDependentPackageName.StartsWith("/Game"))
             {
-                //Try find firstly to avoid duplicated entry.
+                // Try find firstly to avoid duplicated entry.
                 if (DependicesInGameContentDir.Find(LongDependentPackageName) == INDEX_NONE)
                 {
                     DependicesInGameContentDir.Add(LongDependentPackageName);
@@ -210,12 +209,12 @@ void FExportAssetDependeciesModule::GatherDependenciesInfoRecursively(FAssetRegi
     }
 }
 
-void FExportAssetDependeciesModule::SaveDependicesInfo(const FString &ResultFileOutputPath, const TMap<FString, FDependicesInfo> &DependicesInfos)
+void FExportAssetDependeciesModule::SaveDependicesInfo(const TMap<FString, FDependicesInfo> &DependicesInfos)
 {
     TSharedPtr<FJsonObject> RootJsonObject = MakeShareable(new FJsonObject);
     for (auto &DependicesInfoEntry : DependicesInfos)
     {
-        //Write dependencies in game content dir.
+        // Write dependencies in game content dir.
         TSharedPtr<FJsonObject> EntryJsonObject = MakeShareable(new FJsonObject);
         {
             TArray< TSharedPtr<FJsonValue> > DependenciesEntry;
@@ -226,7 +225,7 @@ void FExportAssetDependeciesModule::SaveDependicesInfo(const FString &ResultFile
             EntryJsonObject->SetArrayField("DependenciesInGameContentDir", DependenciesEntry);
         }
 
-        //Write dependencies not in game content dir.
+        // Write dependencies not in game content dir.
         {
             TArray< TSharedPtr<FJsonValue> > DependenciesEntry;
             for (auto &d : DependicesInfoEntry.Value.OtherDependices)
@@ -243,12 +242,15 @@ void FExportAssetDependeciesModule::SaveDependicesInfo(const FString &ResultFile
     auto JsonWirter = TJsonWriterFactory<>::Create(&OutputString);
     FJsonSerializer::Serialize(RootJsonObject.ToSharedRef(), JsonWirter);
 
-    FString ResultFileFilename = FPaths::Combine(ResultFileOutputPath, TEXT("AssetDependencies.json"));
-    //Attention to FFileHelper::EEncodingOptions::ForceUTF8 here. In some case,
+    FString ResultFileFilename = FPaths::Combine(FPaths::GameSavedDir(), TEXT("ExportAssetDependecies/AssetDependencies.json"));
+    ResultFileFilename = FPaths::ConvertRelativePathToFull(FPaths::GetPath(ResultFileFilename));
+
+    // Attention to FFileHelper::EEncodingOptions::ForceUTF8 here. 
+    // In some case, UE4 will save as UTF16 according to the content.
     bool bSaveSuccess = FFileHelper::SaveStringToFile(OutputString, *ResultFileFilename, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
     if (bSaveSuccess)
     {
-        //UE4 API to show an editor notification.
+        // UE4 API to show an editor notification.
         auto Message = LOCTEXT("ExportAssetDependeciesSuccessNotification", "Succeed to export asset dependecies.");
         FNotificationInfo Info(Message);
         Info.bFireAndForget = true;
@@ -259,7 +261,7 @@ void FExportAssetDependeciesModule::SaveDependicesInfo(const FString &ResultFile
         const FString HyperLinkText = ResultFileFilename;
         Info.Hyperlink = FSimpleDelegate::CreateStatic([](FString SourceFilePath)
         {
-            FPlatformProcess::ExploreFolder(*(FPaths::ConvertRelativePathToFull(FPaths::GetPath(SourceFilePath))));
+            FPlatformProcess::ExploreFolder(*SourceFilePath);
         }, HyperLinkText);
         Info.HyperlinkText = FText::FromString(HyperLinkText);
 
