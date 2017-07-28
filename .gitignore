@@ -72,3 +72,6 @@
 
 **/.vscode/*
 **/__pycache__/*
+
+**/dist/*
+*.spec
