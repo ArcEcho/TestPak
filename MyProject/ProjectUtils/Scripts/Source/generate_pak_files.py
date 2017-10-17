@@ -183,13 +183,6 @@ if __name__ == "__main__":
                 if not bShouldGenerateBatchPak:
                     for longPackageName in packagesToHandle:
                         outputPakFilePath = GeneratePak(targetOutputDir, targetProjectCookedGameDir, longPackageName)
-                        # If the pak file size is less than 64KB, when pack and regenerate pak file to meet the PAK_PRECAHCE_GRUNULARITY. 
-                        if os.path.getsize(outputPakFilePath) < 64 * 1024:
-                            os.remove(outputPakFilePath)
-                            outputPakFilePath = GeneratePak(targetOutputDir, targetProjectCookedGameDir, longPackageName,  inShouldPackTo64KB = True)
-                            isPacked = True       
-                        else:
-                            isPacked = False
                         _, outputFilename = os.path.split(outputPakFilePath) 
 
                         if longPackageName != targetPackage:
@@ -198,7 +191,6 @@ if __name__ == "__main__":
                             entry["file_name"] = outputFilename
                             entry["file_size"] = os.path.getsize(outputPakFilePath)
                             entry["long_package_name"] = longPackageName
-                            entry["is_packed_to_64KB"] = isPacked
                             jsonObject["dependent_pak_file_list"].append(entry)
                         else:
                             # Dependencies
@@ -206,21 +198,12 @@ if __name__ == "__main__":
                             filename = os.path.normpath(targetProjectCookedGameDir + filename)
                             jsonObject["file_size"] = os.path.getsize(outputPakFilePath)
                             jsonObject["pak_file"] = outputFilename
-                            jsonObject["is_packed_to_64KB"] = isPacked
                             jsonObject["asset_class"] = dependentData["AssetClass"]
 
                             # Write json object to info file.
                             generatePakLogFileHandle.write('"{}" --> "{}"\n'.format(longPackageName, sha1OfLongTargetPackageName ))
                 else:
                     outputPakFilePath = GenerateBatchPak(targetOutputDir, targetProjectCookedGameDir, packagesToHandle, sha1OfLongTargetPackageName)
-                    
-                    # If the pak file size is less than 64KB, when pack and regenerate pak file to meet the PAK_PRECAHCE_GRUNULARITY. 
-                    if os.path.getsize(outputPakFilePath) < 64 * 1024:
-                        os.remove(outputPakFilePath)
-                        outputPakFilePath =  GenerateBatchPak(targetOutputDir, targetProjectCookedGameDir, packagesToHandle, sha1OfLongTargetPackageName, inShouldPackTo64KB = True)
-                        isPacked = True       
-                    else:
-                        isPacked = False
                     _, outputFilename = os.path.split(outputPakFilePath) 
                     
                     # Dependencies
@@ -228,7 +211,6 @@ if __name__ == "__main__":
                     filename = os.path.normpath(os.path.join(targetProjectCookedGameDir,filename))
                     jsonObject["file_size"] = os.path.getsize(outputPakFilePath)
                     jsonObject["pak_file"] = outputFilename
-                    jsonObject["is_packed_to_64KB"] = isPacked
                     jsonObject["asset_class"] = dependentData["AssetClass"]
 
                     # Write json object to info file.
